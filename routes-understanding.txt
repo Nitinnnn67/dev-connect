@@ -1,0 +1,157 @@
+🔥 🔵 1) LANDING PAGE
+GET /
+→ Bas website ka first page show karega (landing.ejs)
+---------------------------------------------------------------------
+🔥 🟢 2) AUTHENTICATION ROUTES
+GET /login
+→ Login form wala page dikhayega.
+
+POST /login
+→ User email + password verify karega.
+→ Sahi hua → /home pe redirect.
+---------------------------------------------------------------------
+GET /register
+
+→ Register form page dikhayega.
+
+POST /register
+
+→ Naya user create karega.
+→ Uski skills, bio, sab save.
+→ Redirect to login.
+---------------------------------------------------------------------
+GET /logout
+
+→ Session destroy karega.
+→ User logout ho jayega.
+---------------------------------------------------------------------
+🔥 🟣 3) HOME / DASHBOARD
+GET /home
+
+→ Dashboard page.
+→ User ki skills ke hisab se recommended projects fetch karega.
+→ Home.ejs show karega.
+---------------------------------------------------------------------
+🔥 🔴 4) USER PROFILE ROUTES
+GET /users/:id
+
+→ User profile page.
+→ User info + uske projects + uski skills show.
+---------------------------------------------------------------------
+GET /users/:id/edit
+
+→ Profile edit page show.
+
+---------------------------------------------------------------------
+PUT /users/:id
+
+→ User ka profile update karega (name, skills, bio etc).
+→ Wapas uske profile pe redirect.
+---------------------------------------------------------------------
+🔥 🔵 5) PROJECT ROUTES
+GET /projects/new
+
+→ Naya project banane ka form dikhayega.
+---------------------------------------------------------------------
+
+GET /projects
+
+→ Saare projects list karega.
+→ Filters (tags, status) apply ho sakte hain.
+---------------------------------------------------------------------
+
+POST /projects
+
+→ New project create karega.
+→ Title, desc, skills, team size sab save.
+---------------------------------------------------------------------
+
+GET /projects/:id
+
+→ Project detail page show karega.
+→ Team members + description + skills.
+---------------------------------------------------------------------
+GET /projects/:id/edit
+
+→ Project edit form show.
+---------------------------------------------------------------------
+PUT /projects/:id
+
+→ Project update karega.
+→ Redirect to project detail page.
+---------------------------------------------------------------------
+DELETE /projects/:id
+
+→ Project delete karega.
+---------------------------------------------------------------------
+🔥 🟡 6) PROJECT JOIN / LEAVE
+POST /projects/:id/join
+
+→ User project join karega.
+→ Team me add ho jayega.
+---------------------------------------------------------------------
+DELETE /projects/:id/leave
+
+→ User project chhod dega.
+---------------------------------------------------------------------
+🔥 🟤 7) PROJECT DASHBOARD (TASKS + PROGRESS)
+GET /projects/:id/dashboard
+
+→ Project dashboard dikhayega.
+→ Tasks, analytics, work progress.
+---------------------------------------------------------------------
+🔥 🟠 8) TASK MANAGEMENT
+POST /projects/:id/tasks
+
+→ Naya task create karega (title, desc, assignedTo etc).
+---------------------------------------------------------------------
+PUT /projects/:id/tasks/:taskId
+
+→ Task update karega (status, priority etc).
+---------------------------------------------------------------------
+DELETE /projects/:id/tasks/:taskId
+
+→ Task delete karega.
+---------------------------------------------------------------------
+🔥 🔵 9) TEAM CHAT ROUTES
+GET /projects/:id/chat
+
+→ Chat page show karega.
+→ Previous messages fetch honge.
+---------------------------------------------------------------------
+POST /projects/:id/chat
+
+→ Naya chat message save karega.
+→ JSON return karega.
+---------------------------------------------------------------------
+🔥 🟢 10) SEARCH
+GET /search
+
+→ Users ya projects search karne ke liye.
+→ Query + filter dono supported.
+---------------------------------------------------------------------
+🔥 🟣 11) NOTIFICATIONS
+GET /notifications
+
+→ User ki notifications show karega.
+→ Example: “You joined a project”, “New message”.
+---------------------------------------------------------------------
+PUT /notifications/:id/read
+
+→ Notification ko “read” mark karega.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+🚀 TOTAL ROUTES SUMMARY (SHORT FORM)
+Type	Routes
+Landing	/
+Auth	/login, /register, /logout
+Dashboard	/home
+User	/users/:id, /users/:id/edit
+Projects	/projects, /projects/new, /projects/:id, /projects/:id/edit
+Project Actions	/projects/:id/join, /projects/:id/leave
+Dashboard	/projects/:id/dashboard
+Tasks	/projects/:id/tasks (CRUD)
+Chat	/projects/:id/chat
+Search	/search
+Notifications	/notifications
