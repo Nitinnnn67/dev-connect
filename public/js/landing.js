@@ -147,6 +147,23 @@ if (typeof gsap === 'undefined') {
     });
 }
 
+// ===== NAVBAR SCROLL EFFECT =====
+const navbar = document.querySelector('.navbar');
+let lastScroll = 0;
+
+window.addEventListener('scroll', () => {
+    const currentScroll = window.pageYOffset;
+    
+    // Add/remove scrolled class for glassmorphism effect
+    if (currentScroll > 50) {
+        navbar?.classList.add('scrolled');
+    } else {
+        navbar?.classList.remove('scrolled');
+    }
+    
+    lastScroll = currentScroll;
+});
+
 // ===== CONSOLE MESSAGE =====
 console.log('🚀 DevConnect Landing Page Loaded');
 console.log('👨‍💻 Built by Nitin & Esha');

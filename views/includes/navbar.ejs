@@ -1,0 +1,289 @@
+<!-- Transparent Navbar -->
+<nav class="home-navbar">
+    <div class="navbar-container">
+        <div class="navbar-brand">
+            <i class="fas fa-code-branch"></i>
+            <span>DevConnect</span>
+        </div>
+        <ul class="navbar-menu">
+            <li><a href="/home" class="nav-link">Dashboard</a></li>
+            <li><a href="/projects" class="nav-link">Projects</a></li>
+            <li><a href="/users" class="nav-link">Community</a></li>
+            <li><a href="/settings" class="nav-link">Settings</a></li>
+        </ul>
+        <div class="navbar-actions">
+            <button class="notification-btn">
+                <i class="fas fa-bell"></i>
+                <span class="badge">3</span>
+            </button>
+            <div class="user-menu">
+                <img src="https://ui-avatars.com/api/?name=User&background=11293A&color=fff" alt="User" class="user-avatar">
+                <div class="user-dropdown">
+                    <a href="/users/profile"><i class="fas fa-user"></i> Profile</a>
+                    <a href="/settings"><i class="fas fa-cog"></i> Settings</a>
+                    <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+        <button class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+</nav>
+
+<style>
+/* Transparent Navbar */
+.home-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(17, 41, 58, 0.1);
+    padding: 16px 0;
+    transition: all 0.3s ease;
+}
+
+.home-navbar.scrolled {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.navbar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 22px;
+    font-weight: 600;
+    color: #11293A;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.navbar-brand i {
+    color: #B58863;
+    font-size: 24px;
+}
+
+.navbar-menu {
+    display: flex;
+    list-style: none;
+    gap: 32px;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar-menu a {
+    text-decoration: none;
+    color: #3D4D55;
+    font-weight: 500;
+    font-size: 15px;
+    transition: color 0.3s ease;
+    position: relative;
+}
+
+.navbar-menu a::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #B58863;
+    transition: width 0.3s ease;
+}
+
+.navbar-menu a:hover,
+.navbar-menu a.active {
+    color: #11293A;
+}
+
+.navbar-menu a:hover::after,
+.navbar-menu a.active::after {
+    width: 100%;
+}
+
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.notification-btn {
+    position: relative;
+    background: none;
+    border: none;
+    color: #3D4D55;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    transition: color 0.3s ease;
+}
+
+.notification-btn:hover {
+    color: #11293A;
+}
+
+.notification-btn .badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: #B58863;
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 5px;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+}
+
+.user-menu {
+    position: relative;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #E1E4E8;
+    transition: border-color 0.3s ease;
+}
+
+.user-avatar:hover {
+    border-color: #B58863;
+}
+
+.user-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    background: white;
+    border: 1px solid #E1E4E8;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    min-width: 180px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+.user-menu:hover .user-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.user-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: #3D4D55;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.user-dropdown a:first-child {
+    border-radius: 12px 12px 0 0;
+}
+
+.user-dropdown a:last-child {
+    border-radius: 0 0 12px 12px;
+}
+
+.user-dropdown a:hover {
+    background: #F8F9FA;
+    color: #11293A;
+}
+
+.user-dropdown a i {
+    width: 16px;
+    text-align: center;
+    color: #B58863;
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: #11293A;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .navbar-menu {
+        display: none;
+    }
+    
+    .mobile-menu-btn {
+        display: block;
+    }
+}
+
+@media (max-width: 768px) {
+    .navbar-actions {
+        gap: 12px;
+    }
+    
+    .user-avatar {
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (max-width: 540px) {
+    .navbar-brand span {
+        font-size: 18px;
+    }
+    
+    .notification-btn {
+        font-size: 18px;
+    }
+}
+</style>
+
+<script>
+// Navbar scroll effect
+window.addEventListener('DOMContentLoaded', function() {
+    const navbar = document.querySelector('.home-navbar');
+    
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
+    
+    // Set active link based on current page
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.navbar-menu .nav-link');
+    
+    navLinks.forEach(link => {
+        if (link.getAttribute('href') === currentPath) {
+            link.classList.add('active');
+        }
+    });
+});
+</script>

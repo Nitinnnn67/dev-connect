@@ -1,0 +1,282 @@
+<% layout("/layout/boilerplate") %>
+
+<link rel="stylesheet" href="/css/profile-edit.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Profile Edit Container -->
+<div class="profile-edit-container">
+    <div class="edit-wrapper">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <a href="/users/profile" class="back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <div>
+                        <h1>Edit Profile</h1>
+                        <p>Update your personal information and settings</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                    <button type="submit" form="profileForm" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Form -->
+        <form id="profileForm" action="/users/<%= userId || '123' %>?_method=PUT" method="POST" enctype="multipart/form-data">
+            <div class="edit-content">
+                <!-- Left Column -->
+                <div class="edit-main">
+                    <!-- Profile Picture Section -->
+                    <div class="edit-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-user-circle"></i>
+                            Profile Picture
+                        </h2>
+                        <div class="avatar-section">
+                            <div class="avatar-preview">
+                                <img src="https://ui-avatars.com/api/?name=User+Name&size=150&background=11293A&color=fff" alt="Profile" id="avatarPreview">
+                                <div class="avatar-overlay">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Change Photo</span>
+                                </div>
+                            </div>
+                            <div class="avatar-controls">
+                                <input type="file" id="avatarInput" name="avatar" accept="image/*" hidden>
+                                <button type="button" class="btn btn-primary" id="uploadBtn">
+                                    <i class="fas fa-upload"></i>
+                                    Upload Photo
+                                </button>
+                                <button type="button" class="btn btn-secondary" id="removeBtn">
+                                    <i class="fas fa-trash"></i>
+                                    Remove
+                                </button>
+                                <p class="help-text">JPG, PNG or GIF. Max size 5MB</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Basic Information -->
+                    <div class="edit-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-info-circle"></i>
+                            Basic Information
+                        </h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="fullName">Full Name *</label>
+                                <input type="text" id="fullName" name="fullName" value="User Name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="username">Username *</label>
+                                <input type="text" id="username" name="username" value="username" required>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" value="user@example.com" required>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="bio">Bio</label>
+                                <textarea id="bio" name="bio" rows="4" placeholder="Tell us about yourself...">Full Stack Developer | Open Source Enthusiast | Building amazing things with code</textarea>
+                                <span class="char-count">0 / 500</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="edit-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Contact Information
+                        </h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="location">Location</label>
+                                <input type="text" id="location" name="location" value="Location, Country" placeholder="City, Country">
+                            </div>
+                            <div class="form-group">
+                                <label for="website">Website</label>
+                                <input type="url" id="website" name="website" value="https://website.com" placeholder="https://yourwebsite.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone Number</label>
+                                <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567">
+                            </div>
+                            <div class="form-group">
+                                <label for="company">Company</label>
+                                <input type="text" id="company" name="company" placeholder="Your company name">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Skills Section -->
+                    <div class="edit-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-code"></i>
+                            Skills & Technologies
+                        </h2>
+                        <div class="skills-input-wrapper">
+                            <div class="skills-display" id="skillsDisplay">
+                                <span class="skill-tag">JavaScript<button type="button" class="remove-skill">&times;</button></span>
+                                <span class="skill-tag">React<button type="button" class="remove-skill">&times;</button></span>
+                                <span class="skill-tag">Node.js<button type="button" class="remove-skill">&times;</button></span>
+                                <span class="skill-tag">Python<button type="button" class="remove-skill">&times;</button></span>
+                                <span class="skill-tag">MongoDB<button type="button" class="remove-skill">&times;</button></span>
+                                <span class="skill-tag">Git<button type="button" class="remove-skill">&times;</button></span>
+                                <span class="skill-tag">Docker<button type="button" class="remove-skill">&times;</button></span>
+                                <span class="skill-tag">AWS<button type="button" class="remove-skill">&times;</button></span>
+                            </div>
+                            <div class="skill-input-group">
+                                <input type="text" id="skillInput" placeholder="Add a skill (e.g., JavaScript, React)">
+                                <button type="button" class="btn btn-primary" id="addSkillBtn">
+                                    <i class="fas fa-plus"></i>
+                                    Add
+                                </button>
+                            </div>
+                            <input type="hidden" id="skillsHidden" name="skills" value="">
+                        </div>
+                    </div>
+
+                    <!-- Social Links -->
+                    <div class="edit-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-share-nodes"></i>
+                            Social Links
+                        </h2>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="github">
+                                    <i class="fab fa-github"></i>
+                                    GitHub
+                                </label>
+                                <input type="url" id="github" name="github" placeholder="https://github.com/username">
+                            </div>
+                            <div class="form-group">
+                                <label for="linkedin">
+                                    <i class="fab fa-linkedin"></i>
+                                    LinkedIn
+                                </label>
+                                <input type="url" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/username">
+                            </div>
+                            <div class="form-group">
+                                <label for="twitter">
+                                    <i class="fab fa-twitter"></i>
+                                    Twitter
+                                </label>
+                                <input type="url" id="twitter" name="twitter" placeholder="https://twitter.com/username">
+                            </div>
+                            <div class="form-group">
+                                <label for="portfolio">
+                                    <i class="fas fa-globe"></i>
+                                    Portfolio
+                                </label>
+                                <input type="url" id="portfolio" name="portfolio" placeholder="https://yourportfolio.com">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar -->
+                <aside class="edit-sidebar">
+                    <!-- Privacy Settings -->
+                    <div class="edit-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-shield-alt"></i>
+                            Privacy
+                        </h2>
+                        <div class="settings-list">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Profile Visibility</h4>
+                                    <p>Make profile visible to everyone</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="profilePublic" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Show Email</h4>
+                                    <p>Display email on profile</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="showEmail">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Show Projects</h4>
+                                    <p>Display your projects publicly</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="showProjects" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notifications -->
+                    <div class="edit-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-bell"></i>
+                            Notifications
+                        </h2>
+                        <div class="settings-list">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Email Notifications</h4>
+                                    <p>Receive updates via email</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="emailNotif" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h4>Project Updates</h4>
+                                    <p>Get notified about projects</p>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="projectNotif" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Danger Zone -->
+                    <div class="edit-card danger-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Danger Zone
+                        </h2>
+                        <div class="danger-actions">
+                            <button type="button" class="btn btn-danger" id="deleteAccountBtn">
+                                <i class="fas fa-trash"></i>
+                                Delete Account
+                            </button>
+                            <p class="help-text">This action cannot be undone</p>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- GSAP Animation Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<!-- Profile Edit Scripts -->
+<script src="/js/profile-edit.js"></script>
+<script src="/animations/profile-edit-animat.js"></script>

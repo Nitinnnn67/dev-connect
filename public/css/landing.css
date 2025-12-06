@@ -5,14 +5,72 @@
 }
 
 :root {
-    --primary: #4A90E2;
-    --secondary: #1A1A1A;
-    --accent: #7ED957;
-    --white: #FFFFFF;
-    --light-gray: #F5F5F5;
-    --dark-gray: #333333;
-    --text-gray: #666666;
-    --gradient: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+  /* Material Design 3 Color System - Custom Palette */
+  --m3-primary: #11293A;
+  --m3-primary-container: #3D4D55;
+  --m3-on-primary: #ffffff;
+  --m3-on-primary-container: #D3C3B9;
+  
+  --m3-secondary: #3D4D55;
+  --m3-secondary-container: #A79E9C;
+  --m3-on-secondary: #ffffff;
+  --m3-on-secondary-container: #151518;
+  
+  --m3-tertiary: #B58863;
+  --m3-tertiary-container: #D3C3B9;
+  --m3-on-tertiary: #ffffff;
+  --m3-on-tertiary-container: #151518;
+  
+  --m3-surface: #D3C3B9;
+  --m3-surface-variant: #A79E9C;
+  --m3-surface-dim: #A79E9C;
+  --m3-surface-bright: #ffffff;
+  --m3-surface-container-lowest: #ffffff;
+  --m3-surface-container-low: #D3C3B9;
+  --m3-surface-container: #A79E9C;
+  --m3-surface-container-high: #3D4D55;
+  --m3-surface-container-highest: #11293A;
+  
+  --m3-on-surface: #151518;
+  --m3-on-surface-variant: #11293A;
+  
+  --m3-outline: #3D4D55;
+  --m3-outline-variant: #A79E9C;
+  --m3-error: #ba1a1a;
+  --m3-on-error: #ffffff;
+  
+  /* Material Design 3 Shadows */
+  --m3-shadow-1: 0px 1px 3px rgba(0,0,0,0.12), 0px 1px 2px rgba(0,0,0,0.14);
+  --m3-shadow-2: 0px 3px 6px rgba(0,0,0,0.15), 0px 2px 4px rgba(0,0,0,0.12);
+  --m3-shadow-3: 0px 10px 20px rgba(0,0,0,0.15), 0px 3px 6px rgba(0,0,0,0.10);
+  --m3-shadow-4: 0px 15px 25px rgba(0,0,0,0.15), 0px 5px 10px rgba(0,0,0,0.05);
+  --m3-shadow-5: 0px 20px 40px rgba(0,0,0,0.2);
+  
+  /* Material Design 3 Shape */
+  --m3-shape-small: 8px;
+  --m3-shape-medium: 16px;
+  --m3-shape-large: 24px;
+  --m3-shape-extra-large: 32px;
+  
+  /* Simplified Aliases */
+  --primary: var(--m3-primary);
+  --secondary: var(--m3-secondary);
+  --accent: var(--m3-tertiary);
+  --light-bg: var(--m3-surface);
+  --text-dark: var(--m3-on-surface);
+  --text-light: #c6c6c6;
+  --white: #ffffff;
+  --text-gray: var(--m3-on-surface-variant);
+  
+  /* Gradients */
+  --gradient: linear-gradient(135deg, var(--m3-primary) 0%, var(--m3-primary-container) 100%);
+  --accent-gradient: linear-gradient(135deg, var(--m3-tertiary) 0%, var(--m3-tertiary-container) 100%);
+  
+  /* Animations */
+  --animation-standard: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-decelerate: 0.3s cubic-bezier(0.0, 0.0, 0.2, 1);
+  --animation-accelerate: 0.3s cubic-bezier(0.4, 0.0, 1, 1);
+  --hover-overlay: rgba(255, 255, 255, 0.08);
 }
 
 html {
@@ -38,11 +96,19 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     z-index: 1000;
     padding: 15px 0;
+    transition: all 0.3s ease;
+}
+
+.navbar.scrolled {
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
 
 .nav-content {
@@ -186,7 +252,21 @@ body {
     padding-top: 80px;
     position: relative;
     overflow: hidden;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8f4f8 100%);
+    background: linear-gradient(-45deg, #f5f7fa, #e8f4f8, #e3f2fd, #f3e5f5);
+    background-size: 400% 400%;
+    animation: heroGradient 15s ease infinite;
+}
+
+@keyframes heroGradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 .hero-background {
@@ -195,11 +275,22 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    opacity: 0.05;
+    opacity: 0.08;
     background-image: 
         radial-gradient(circle at 20% 30%, var(--primary) 1px, transparent 1px),
-        radial-gradient(circle at 80% 70%, var(--primary) 1px, transparent 1px);
-    background-size: 50px 50px;
+        radial-gradient(circle at 80% 70%, var(--primary) 1px, transparent 1px),
+        radial-gradient(circle at 50% 50%, rgba(74, 144, 226, 0.3) 1px, transparent 1px);
+    background-size: 50px 50px, 80px 80px, 100px 100px;
+    animation: movePattern 20s linear infinite;
+}
+
+@keyframes movePattern {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(50px, 50px);
+    }
 }
 
 .hero-content {

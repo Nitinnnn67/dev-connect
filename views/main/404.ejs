@@ -1,0 +1,141 @@
+<% layout("/layouts/boilerplate") %>
+
+<link rel="stylesheet" href="/css/register.css">
+
+<style>
+    .error-container {
+        width: 100%;
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .error-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 30px;
+        padding: 60px 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .error-icon {
+        font-size: 120px;
+        margin-bottom: 20px;
+        animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+
+    .error-code {
+        font-size: 72px;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 10px;
+    }
+
+    .error-title {
+        font-size: 32px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+    }
+
+    .error-message {
+        font-size: 18px;
+        color: #666;
+        margin-bottom: 40px;
+        line-height: 1.6;
+    }
+
+    .btn-home {
+        display: inline-block;
+        padding: 16px 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 15px;
+        font-size: 18px;
+        font-weight: 600;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s;
+    }
+
+    .btn-home:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+        color: white;
+    }
+</style>
+
+<div class="error-container">
+    <div class="error-card">
+        <div class="error-icon">🔍</div>
+        <div class="error-code">404</div>
+        <h1 class="error-title">Page Not Found</h1>
+        <p class="error-message">
+            Oops! The page you're looking for doesn't exist. 
+            It might have been moved or deleted.
+        </p>
+        <a href="/" class="btn-home">
+            <i class="fas fa-home"></i> Back to Home
+        </a>
+    </div>
+</div>
+
+<!-- GSAP Animation Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script>
+    gsap.from('.error-card', {
+        duration: 1,
+        y: 50,
+        opacity: 0,
+        ease: 'power3.out'
+    });
+
+    gsap.from('.error-icon', {
+        duration: 1,
+        scale: 0,
+        opacity: 0,
+        ease: 'back.out(1.7)',
+        delay: 0.3
+    });
+
+    gsap.from('.error-code', {
+        duration: 0.8,
+        x: -50,
+        opacity: 0,
+        delay: 0.5
+    });
+
+    gsap.from('.error-title', {
+        duration: 0.8,
+        x: 50,
+        opacity: 0,
+        delay: 0.6
+    });
+
+    gsap.from('.error-message', {
+        duration: 0.8,
+        y: 20,
+        opacity: 0,
+        delay: 0.7
+    });
+
+    gsap.from('.btn-home', {
+        duration: 0.8,
+        scale: 0.9,
+        opacity: 0,
+        ease: 'back.out(1.7)',
+        delay: 0.9
+    });
+</script>

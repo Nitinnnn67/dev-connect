@@ -1,2 +1,144 @@
-<% layout("/layouts/boilerplate") %>
+<% layout("/layout/boilerplate") %>
+
+<link rel="stylesheet" href="/css/home.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Home Page Container -->
+<div class="home-container">
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">Welcome to <span class="highlight">DevConnect</span></h1>
+                <p class="hero-subtitle">Your central hub for managing projects, collaborating with teams, and building amazing things together.</p>
+                <div class="hero-buttons">
+                    <a href="/projects/new" class="btn btn-primary">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Create Project</span>
+                    </a>
+                    <a href="/projects" class="btn btn-secondary">
+                        <i class="fas fa-folder-open"></i>
+                        <span>Browse Projects</span>
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="floating-card card-1">
+                    <i class="fas fa-code"></i>
+                    <span>Code</span>
+                </div>
+                <div class="floating-card card-2">
+                    <i class="fas fa-users"></i>
+                    <span>Collaborate</span>
+                </div>
+                <div class="floating-card card-3">
+                    <i class="fas fa-rocket"></i>
+                    <span>Deploy</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">0</h3>
+                    <p class="stat-label">Active Projects</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">0</h3>
+                    <p class="stat-label">Team Members</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">0</h3>
+                    <p class="stat-label">Tasks Completed</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 class="stat-number">0%</h3>
+                    <p class="stat-label">Productivity</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Actions Section -->
+    <section class="quick-actions-section">
+        <div class="section-header">
+            <h2>Quick Actions</h2>
+            <p>Get started with these common tasks</p>
+        </div>
+        <div class="actions-grid">
+            <a href="/projects/new" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <h3>New Project</h3>
+                <p>Start a new project from scratch</p>
+            </a>
+            <a href="/users/profile" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-user-edit"></i>
+                </div>
+                <h3>Edit Profile</h3>
+                <p>Update your profile information</p>
+            </a>
+            <a href="/projects" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>Find Projects</h3>
+                <p>Discover and join existing projects</p>
+            </a>
+            <a href="/settings" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <h3>Settings</h3>
+                <p>Manage your account settings</p>
+            </a>
+        </div>
+    </section>
+
+    <!-- Recent Activity Section -->
+    <section class="activity-section">
+        <div class="section-header">
+            <h2>Recent Activity</h2>
+            <a href="/activity" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="activity-list">
+            <div class="activity-empty">
+                <i class="fas fa-inbox"></i>
+                <p>No recent activity yet</p>
+                <span>Start by creating your first project!</span>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- GSAP Animation Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<!-- Home Page Scripts -->
+<script src="/js/home.js"></script>
+<script src="/animations/home-animat.js"></script>
 

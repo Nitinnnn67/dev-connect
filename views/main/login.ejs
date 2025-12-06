@@ -1,0 +1,120 @@
+<% layout("/layout/boilerplate") %>
+
+<link rel="stylesheet" href="/css/login.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<div class="login-wrapper">
+    <div class="login-container">
+        <!-- Decorative Elements -->
+        <div class="floating-shape shape-1"></div>
+        <div class="floating-shape shape-2"></div>
+        <div class="floating-shape shape-3"></div>
+        
+        <div class="login-card">
+            <!-- Left Side: Brand Section -->
+            <div class="brand-section">
+                <div class="brand-icon">
+                    <i class="fas fa-code-branch"></i>
+                </div>
+                <h2 class="brand-name">DevConnect</h2>
+            </div>
+
+            <!-- Right Side: Form Content -->
+            <div class="login-card-content">
+                <!-- Header -->
+                <div class="login-header">
+                    <h1>Welcome Back</h1>
+                    <p>Sign in to continue to your account</p>
+                </div>
+
+                <!-- Form -->
+                <form action="/login" method="POST" id="loginForm" class="login-form">
+                    <!-- Email Field -->
+                    <div class="input-group">
+                        <label for="email" class="input-label">
+                            <i class="fas fa-envelope"></i>
+                            <span>Email Address</span>
+                        </label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="email" 
+                                class="form-input" 
+                                id="email" 
+                                name="email" 
+                                placeholder="your.email@example.com"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="input-group">
+                        <label for="password" class="input-label">
+                            <i class="fas fa-lock"></i>
+                            <span>Password</span>
+                        </label>
+                        <div class="input-wrapper password-wrapper">
+                            <input 
+                                type="password" 
+                                class="form-input" 
+                                id="password" 
+                                name="password" 
+                                placeholder="Enter your password"
+                                required
+                            >
+                            <button type="button" class="password-toggle" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="form-options">
+                        <label class="remember-checkbox">
+                            <input type="checkbox" name="remember" id="remember">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-login">
+                        <span class="btn-text">Sign In</span>
+                        <span class="btn-icon">
+                            <i class="fas fa-arrow-right"></i>
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <!-- Social Login -->
+                <div class="social-login">
+                    <button class="social-btn github-btn">
+                        <i class="fab fa-github"></i>
+                        <span>GitHub</span>
+                    </button>
+                    <button class="social-btn google-btn">
+                        <i class="fab fa-google"></i>
+                        <span>Google</span>
+                    </button>
+                </div>
+
+                <!-- Footer Link -->
+                <div class="form-footer">
+                    <p>Don't have an account? <a href="/register" class="register-link">Sign up</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GSAP Animation Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<!-- Login Page Scripts -->
+<script src="/js/login.js"></script>
+<script src="/animations/login-animat.js"></script>

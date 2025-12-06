@@ -79,11 +79,11 @@ app.get("/home",wrapAsync(async(req, res)=>{
 app.get("/users/:id",wrapAsync(async(req,res) => {
     const { id } = req.params;
     // Fetch user profile with projects and skills
-    res.render("main/profile.ejs")
+    res.render("users/profile.ejs")
 }));
 
 app.get("/users/:id/edit",wrapAsync(async(req,res) => {
-    res.render("main/profile-edit.ejs")
+    res.render("users/profile-edit.ejs")
 }));
 
 app.put("/users/:id", wrapAsync(async(req, res) => {
@@ -213,7 +213,7 @@ next(new ExpressError(404,"page not found"))
 
 app.use((err,req,res,next)=>{
 let {statusCode=500,message="something went wrong"}=err;
- res.status(statusCode).render("diary/404.ejs");
+ res.status(statusCode).render("main/404.ejs");
 // res.status(statusCode).send(message);
 })
 
