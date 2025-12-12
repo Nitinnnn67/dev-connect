@@ -7,9 +7,19 @@ const path = require("path");
 const ejsMate=require("ejs-mate");
 const wrapAsync  = require ("./utils/wrapAsync.js");
 const ExpressError  = require ("./utils/ExpressError.js");
-// require('dotenv').config();
+const Project = require("./models/project.js");
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
+const User = require("./models/users.js");
+const flash = require("connect-flash");
+require('dotenv').config();
 
-//----------------------------------------------------------------------------
+//--------------------Routes--------------------------------------------
+
+const userRoutes = require("./routes/user.js");
+const { isLoggedin } = require("./utils/middleware.js");
+
+//---------view engine setup-----------------------------------------------------
 
 app.set("view engine","ejs")
 app.set("views", path.join(__dirname,"views"))
@@ -34,43 +44,95 @@ const sessionOptions = {
 //-------------------------------------------------------------------------------
 
 app.use(session(sessionOptions));
-// app.use(flash());
+app.use(flash());
 
-//-------------------------------------------------------------------------------
+// Passport configuration
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
+// Make flash messages and user available to all views
+app.use((req, res, next) => {
+    res.locals.success = req.flash("success");
+    res.locals.error = req.flash("error");
+    res.locals.currentUser = req.user;
+    next();
+});
+
+//---------database connection---------------------------------------------------
+
+const dbUrl= process.env.MONGO_DB_ATLAS;
+main().then((res)=>{
+    console.log("connected to database: Dev-Connect");
+
+    // Initialize the database with a test entry if it's empty
+    Project.countDocuments().then((count) => {
+        if (count === 0) {
+            const testProject = new Project({
+                title: "DevConnect",
+                description: "Developer collaboration platform",
+                requiredSkills: ["node", "express", "mongodb"],
+                createdBy: new mongoose.Types.ObjectId(),      
+                members: [],          
+                status: "open",               
+                createdAt: Date.now()
+            });
+            testProject.save().then(() => console.log("Test project created"));
+        }
+    });
+})
+.catch((err)=>{
+    console.log("Database connection error:", err.message);
+});
+
+async function main() {
+   try {
+       await mongoose.connect(dbUrl);
+       console.log("MongoDB connected successfully");
+   } catch (error) {
+       console.log("MongoDB connection failed:", error);
+       throw error;
+   }
+}
+
+//-----------------------------------------------------------------
 // Landing page
 app.get("/", wrapAsync(async(req, res) => {
     res.render("main/landing.ejs");
 }));
-
+//----------------------------------------------------------------- 
+app.use("/", userRoutes);
+//-----------------------------------------------------------------
 // Authentication routes
-app.get("/login", wrapAsync(async(req,res) => {
-    res.render("main/login.ejs")
-}));
+// app.get("/login", wrapAsync(async(req,res) => {
+//     res.render("main/login.ejs")
+// }));
 
-app.post("/login", wrapAsync(async(req, res) => {
-    const { email, password } = req.body;
+// app.post("/login", wrapAsync(async(req, res) => {
+//     const { email, password } = req.body;
     // Authentication logic
-    res.redirect("/home");
-}));
+//     res.redirect("/home");
+// }));
 
-app.get("/register", wrapAsync(async(req,res) => {
-    res.render("main/register.ejs")
-}));
+// app.get("/register", wrapAsync(async(req,res) => {
+//     res.render("main/register.ejs")
+// }));
 
-app.post("/register", wrapAsync(async(req, res) => {
-    const { name, email, password, skills, bio } = req.body;
+// app.post("/register", wrapAsync(async(req, res) => {
+//     const { name, email, password, skills, bio } = req.body;
     // Create new user with skills
-    res.redirect("/login");
-}));
+//     res.redirect("/login");
+// }));
 
-app.get("/logout", wrapAsync(async(req, res) => {
-    req.session.destroy();
-    res.redirect("/");
-}));
-
+// app.get("/logout", wrapAsync(async(req, res) => {
+//     req.session.destroy();
+//     res.redirect("/");
+// }));
+//-----------------------------------------------------------------
 // Home/Dashboard route
-app.get("/home",wrapAsync(async(req, res)=>{
+app.get("/home",isLoggedin, wrapAsync(async(req, res)=>{
     // Fetch recommended projects based on user skills
     res.render("main/home.ejs");
 }));

@@ -9,7 +9,7 @@ gsap.from('.register-card', {
 });
 
 // Form groups stagger animation
-gsap.from('.form-group', {
+gsap.from('.input-group', {
     duration: 0.8,
     y: 30,
     opacity: 0,
@@ -42,7 +42,7 @@ gsap.from('.login-link', {
 });
 
 // Form input focus animations
-document.querySelectorAll('.form-control').forEach(input => {
+document.querySelectorAll('.form-input').forEach(input => {
     input.addEventListener('focus', function() {
         gsap.to(this, {
             duration: 0.3,

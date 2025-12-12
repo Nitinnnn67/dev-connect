@@ -1,5 +1,8 @@
 // GSAP Animations for Home Page
 
+// Register ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger);
+
 // Hero Section Animations
 gsap.fromTo('.hero-title',
     { 

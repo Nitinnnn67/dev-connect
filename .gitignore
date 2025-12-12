@@ -1,0 +1,24 @@
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Dependencies  
+OneDrive/Documents/Desktop/AI-Diary/node_modules/
+
+# API Keys (extra protection)
+*.key
+secrets.json
+keys.json
+
+# Logs
+*.log
+logs/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db

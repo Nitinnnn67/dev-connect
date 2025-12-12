@@ -20,27 +20,21 @@ if (loginForm) {
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const email = document.getElementById('email').value.trim();
+        const username = document.getElementById('username').value.trim();
         const password = document.getElementById('password').value;
         
         // Basic validation
-        if (!email || !password) {
+        if (!username || !password) {
             alert('Please fill in all fields');
             return;
         }
         
-        if (!isValidEmail(email)) {
-            alert('Please enter a valid email address');
+        if (username.length < 3) {
+            alert('Email or username must be at least 3 characters long');
             return;
         }
         
         // Submit form
         this.submit();
     });
-}
-
-// Email validation helper
-function isValidEmail(email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
 }
