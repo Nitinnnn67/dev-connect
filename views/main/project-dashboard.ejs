@@ -1,0 +1,471 @@
+<% layout("/layout/boilerplate") %>
+
+<link rel="stylesheet" href="/css/project-dashboard.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Project Dashboard Container -->
+<div class="dashboard-container">
+    <!-- Dashboard Header -->
+    <section class="dashboard-header">
+        <div class="header-content">
+            <div class="header-left">
+                <a href="/projects/1" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div class="project-info">
+                    <h1>DevConnect Platform</h1>
+                    <div class="project-meta">
+                        <span class="status-badge status-active">Active</span>
+                        <span><i class="fas fa-users"></i> 3/5 Members</span>
+                        <span><i class="fas fa-calendar"></i> 45 days left</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="/projects/1/chat" class="btn btn-secondary">
+                    <i class="fas fa-comments"></i>
+                    Team Chat
+                </a>
+                <a href="/projects/1/edit" class="btn btn-primary">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Stats -->
+    <section class="dashboard-stats">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <div class="stat-info">
+                <h3>18</h3>
+                <p>Total Tasks</p>
+            </div>
+            <span class="stat-change positive">+3 this week</span>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #17a2b8 0%, #3498db 100%);">
+                <i class="fas fa-spinner"></i>
+            </div>
+            <div class="stat-info">
+                <h3>7</h3>
+                <p>In Progress</p>
+            </div>
+            <span class="stat-change">Active now</span>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-info">
+                <h3>65%</h3>
+                <p>Completion</p>
+            </div>
+            <span class="stat-change positive">+12% this week</span>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="stat-info">
+                <h3>2</h3>
+                <p>Overdue</p>
+            </div>
+            <span class="stat-change negative">Need attention</span>
+        </div>
+    </section>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-content">
+        <!-- Main Content -->
+        <div class="content-main">
+            <!-- Progress Overview -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-chart-pie"></i>
+                        Progress Overview
+                    </h2>
+                </div>
+                <div class="progress-overview">
+                    <div class="progress-chart">
+                        <svg viewBox="0 0 200 200" class="circular-progress">
+                            <circle cx="100" cy="100" r="85" class="progress-bg"></circle>
+                            <circle cx="100" cy="100" r="85" class="progress-fill" style="stroke-dasharray: 347 534;"></circle>
+                            <text x="100" y="100" class="progress-text">65%</text>
+                        </svg>
+                    </div>
+                    <div class="progress-details">
+                        <div class="progress-item">
+                            <span class="progress-label">Completed</span>
+                            <div class="progress-bar-wrapper">
+                                <div class="progress-bar" style="width: 55%; background: #28a745;"></div>
+                                <span>10 tasks</span>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <span class="progress-label">In Progress</span>
+                            <div class="progress-bar-wrapper">
+                                <div class="progress-bar" style="width: 35%; background: #17a2b8;"></div>
+                                <span>7 tasks</span>
+                            </div>
+                        </div>
+                        <div class="progress-item">
+                            <span class="progress-label">To Do</span>
+                            <div class="progress-bar-wrapper">
+                                <div class="progress-bar" style="width: 10%; background: #6c757d;"></div>
+                                <span>1 task</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Management -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-list-check"></i>
+                        Tasks
+                    </h2>
+                    <button class="btn btn-primary btn-sm" id="addTaskBtn">
+                        <i class="fas fa-plus"></i>
+                        Add Task
+                    </button>
+                </div>
+
+                <!-- Task Filters -->
+                <div class="task-filters">
+                    <button class="filter-btn active" data-filter="all">All Tasks</button>
+                    <button class="filter-btn" data-filter="todo">To Do</button>
+                    <button class="filter-btn" data-filter="in-progress">In Progress</button>
+                    <button class="filter-btn" data-filter="completed">Completed</button>
+                </div>
+
+                <!-- Task List -->
+                <div class="task-list">
+                    <div class="task-item" data-status="in-progress">
+                        <div class="task-checkbox">
+                            <input type="checkbox" id="task1">
+                            <label for="task1"></label>
+                        </div>
+                        <div class="task-content">
+                            <h4>Implement user authentication system</h4>
+                            <p>Set up JWT authentication with refresh tokens and secure password storage</p>
+                            <div class="task-meta">
+                                <span class="task-priority priority-high">High Priority</span>
+                                <span><i class="fas fa-calendar"></i> Due: Dec 15</span>
+                                <span><i class="fas fa-user"></i> John Doe</span>
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            <button class="action-btn" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="task-item" data-status="in-progress">
+                        <div class="task-checkbox">
+                            <input type="checkbox" id="task2">
+                            <label for="task2"></label>
+                        </div>
+                        <div class="task-content">
+                            <h4>Design project dashboard UI</h4>
+                            <p>Create mockups and prototypes for the main dashboard interface</p>
+                            <div class="task-meta">
+                                <span class="task-priority priority-medium">Medium Priority</span>
+                                <span><i class="fas fa-calendar"></i> Due: Dec 12</span>
+                                <span><i class="fas fa-user"></i> Sarah Smith</span>
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            <button class="action-btn" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="task-item" data-status="completed">
+                        <div class="task-checkbox">
+                            <input type="checkbox" id="task3" checked>
+                            <label for="task3"></label>
+                        </div>
+                        <div class="task-content completed">
+                            <h4>Set up project repository</h4>
+                            <p>Initialize Git repository and configure branch protection rules</p>
+                            <div class="task-meta">
+                                <span class="task-priority priority-high">High Priority</span>
+                                <span><i class="fas fa-check-circle"></i> Completed</span>
+                                <span><i class="fas fa-user"></i> Mike Johnson</span>
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            <button class="action-btn" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="task-item overdue" data-status="in-progress">
+                        <div class="task-checkbox">
+                            <input type="checkbox" id="task4">
+                            <label for="task4"></label>
+                        </div>
+                        <div class="task-content">
+                            <h4>Write API documentation</h4>
+                            <p>Document all REST API endpoints with examples and response formats</p>
+                            <div class="task-meta">
+                                <span class="task-priority priority-medium">Medium Priority</span>
+                                <span class="overdue-badge"><i class="fas fa-exclamation-triangle"></i> Overdue by 3 days</span>
+                                <span><i class="fas fa-user"></i> Unassigned</span>
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            <button class="action-btn" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="task-item" data-status="todo">
+                        <div class="task-checkbox">
+                            <input type="checkbox" id="task5">
+                            <label for="task5"></label>
+                        </div>
+                        <div class="task-content">
+                            <h4>Implement real-time notifications</h4>
+                            <p>Add WebSocket support for push notifications and live updates</p>
+                            <div class="task-meta">
+                                <span class="task-priority priority-low">Low Priority</span>
+                                <span><i class="fas fa-calendar"></i> Due: Dec 20</span>
+                                <span><i class="fas fa-user"></i> Unassigned</span>
+                            </div>
+                        </div>
+                        <div class="task-actions">
+                            <button class="action-btn" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-history"></i>
+                        Recent Activity
+                    </h2>
+                </div>
+                <div class="activity-timeline">
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: #28a745;">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>Task Completed</h4>
+                            <p><strong>Mike Johnson</strong> completed "Set up project repository"</p>
+                            <span class="activity-time">2 hours ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: #17a2b8;">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>New Member Joined</h4>
+                            <p><strong>Emily Brown</strong> joined the project team</p>
+                            <span class="activity-time">5 hours ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: #ffc107;">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h4>Task Updated</h4>
+                            <p><strong>John Doe</strong> updated the priority of "Implement authentication"</p>
+                            <span class="activity-time">1 day ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="content-sidebar">
+            <!-- Team Members -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-users"></i>
+                        Team Members
+                    </h2>
+                    <button class="btn btn-sm btn-secondary" id="inviteBtn">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                </div>
+                <div class="team-list">
+                    <div class="team-member">
+                        <img src="https://ui-avatars.com/api/?name=John+Doe&size=40&background=11293A&color=fff" alt="John Doe">
+                        <div class="member-info">
+                            <h4>John Doe</h4>
+                            <span>Project Lead</span>
+                        </div>
+                        <span class="member-status online"></span>
+                    </div>
+                    <div class="team-member">
+                        <img src="https://ui-avatars.com/api/?name=Sarah+Smith&size=40&background=B58863&color=fff" alt="Sarah Smith">
+                        <div class="member-info">
+                            <h4>Sarah Smith</h4>
+                            <span>UI/UX Designer</span>
+                        </div>
+                        <span class="member-status online"></span>
+                    </div>
+                    <div class="team-member">
+                        <img src="https://ui-avatars.com/api/?name=Mike+Johnson&size=40&background=3D4D55&color=fff" alt="Mike Johnson">
+                        <div class="member-info">
+                            <h4>Mike Johnson</h4>
+                            <span>Backend Developer</span>
+                        </div>
+                        <span class="member-status offline"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Milestones -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-flag"></i>
+                        Milestones
+                    </h2>
+                </div>
+                <div class="milestone-list">
+                    <div class="milestone-item completed">
+                        <div class="milestone-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="milestone-content">
+                            <h4>Project Setup</h4>
+                            <div class="milestone-progress">
+                                <div class="milestone-bar" style="width: 100%;"></div>
+                            </div>
+                            <span>100% Complete</span>
+                        </div>
+                    </div>
+                    <div class="milestone-item active">
+                        <div class="milestone-icon">
+                            <i class="fas fa-spinner"></i>
+                        </div>
+                        <div class="milestone-content">
+                            <h4>Core Features</h4>
+                            <div class="milestone-progress">
+                                <div class="milestone-bar" style="width: 65%;"></div>
+                            </div>
+                            <span>65% Complete</span>
+                        </div>
+                    </div>
+                    <div class="milestone-item">
+                        <div class="milestone-icon">
+                            <i class="fas fa-circle"></i>
+                        </div>
+                        <div class="milestone-content">
+                            <h4>Testing & QA</h4>
+                            <div class="milestone-progress">
+                                <div class="milestone-bar" style="width: 0%;"></div>
+                            </div>
+                            <span>Not Started</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2>
+                        <i class="fas fa-link"></i>
+                        Quick Links
+                    </h2>
+                </div>
+                <div class="quick-links">
+                    <a href="#" class="quick-link">
+                        <i class="fab fa-github"></i>
+                        <span>GitHub Repository</span>
+                    </a>
+                    <a href="#" class="quick-link">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Documentation</span>
+                    </a>
+                    <a href="#" class="quick-link">
+                        <i class="fas fa-globe"></i>
+                        <span>Live Demo</span>
+                    </a>
+                    <a href="#" class="quick-link">
+                        <i class="fas fa-bug"></i>
+                        <span>Report Issues</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- Add Task Modal -->
+<div class="modal" id="addTaskModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Task</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <form id="addTaskForm">
+            <div class="form-group">
+                <label>Task Title *</label>
+                <input type="text" name="title" required placeholder="Enter task title">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" rows="3" placeholder="Task description..."></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select name="priority">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Assign To</label>
+                    <select name="assignedTo">
+                        <option value="">Unassigned</option>
+                        <option value="1">John Doe</option>
+                        <option value="2">Sarah Smith</option>
+                        <option value="3">Mike Johnson</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Due Date</label>
+                <input type="date" name="dueDate">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary modal-cancel">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create Task</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- GSAP Animation Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<!-- Dashboard Scripts -->
+<script src="/js/project-dashboard.js"></script>
+<script src="/animations/project-dashboard-animat.js"></script>

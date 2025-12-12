@@ -1,0 +1,225 @@
+<% layout("/layout/boilerplate") %>
+
+<link rel="stylesheet" href="/css/search.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Search Container -->
+<div class="search-container">
+    <!-- Search Header -->
+    <section class="search-header">
+        <div class="header-content">
+            <h1>Search</h1>
+            <p>Find projects, developers, and opportunities</p>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="search-wrapper">
+            <div class="search-bar-main">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search for projects, users, skills..." value="<%= query || '' %>">
+                <button class="search-btn">Search</button>
+            </div>
+
+            <div class="search-filters">
+                <button class="filter-tab active" data-type="all">
+                    <i class="fas fa-th"></i>
+                    All Results
+                </button>
+                <button class="filter-tab" data-type="projects">
+                    <i class="fas fa-folder"></i>
+                    Projects
+                </button>
+                <button class="filter-tab" data-type="users">
+                    <i class="fas fa-users"></i>
+                    Developers
+                </button>
+                <button class="filter-tab" data-type="skills">
+                    <i class="fas fa-code"></i>
+                    Skills
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Search Results -->
+    <div class="search-results">
+        <div class="results-header">
+            <h2>Search Results</h2>
+            <span class="results-count">Found 127 results</span>
+        </div>
+
+        <!-- Projects Results -->
+        <div class="results-section" id="projectsResults">
+            <h3 class="section-title">Projects (48)</h3>
+            <div class="results-grid">
+                <div class="result-card project-card" data-type="projects">
+                    <div class="card-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h4>DevConnect Platform</h4>
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <p class="card-description">A collaborative platform for developers to find projects and build amazing things together</p>
+                        <div class="card-tags">
+                            <span class="tag">JavaScript</span>
+                            <span class="tag">React</span>
+                            <span class="tag">Node.js</span>
+                        </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-users"></i> 3/5</span>
+                            <span><i class="fas fa-star"></i> 24</span>
+                        </div>
+                    </div>
+                    <a href="/projects/1" class="card-link">View Project</a>
+                </div>
+
+                <div class="result-card project-card" data-type="projects">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #3D4D55 0%, #11293A 100%);">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h4>AI Content Generator</h4>
+                            <span class="status-badge status-recruiting">Recruiting</span>
+                        </div>
+                        <p class="card-description">AI-powered tool to generate high-quality content for blogs and marketing</p>
+                        <div class="card-tags">
+                            <span class="tag">Python</span>
+                            <span class="tag">Django</span>
+                            <span class="tag">OpenAI</span>
+                        </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-users"></i> 1/4</span>
+                            <span><i class="fas fa-star"></i> 18</span>
+                        </div>
+                    </div>
+                    <a href="/projects/2" class="card-link">View Project</a>
+                </div>
+
+                <div class="result-card project-card" data-type="projects">
+                    <div class="card-icon" style="background: linear-gradient(135deg, #B58863 0%, #D3C3B9 100%);">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h4>Task Manager Pro</h4>
+                            <span class="status-badge status-active">Active</span>
+                        </div>
+                        <p class="card-description">Modern task management with real-time collaboration and notifications</p>
+                        <div class="card-tags">
+                            <span class="tag">React</span>
+                            <span class="tag">TypeScript</span>
+                            <span class="tag">Firebase</span>
+                        </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-users"></i> 4/6</span>
+                            <span><i class="fas fa-star"></i> 32</span>
+                        </div>
+                    </div>
+                    <a href="/projects/3" class="card-link">View Project</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Results -->
+        <div class="results-section" id="usersResults">
+            <h3 class="section-title">Developers (52)</h3>
+            <div class="results-grid">
+                <div class="result-card user-card" data-type="users">
+                    <img src="https://ui-avatars.com/api/?name=John+Doe&size=80&background=11293A&color=fff" alt="John Doe">
+                    <div class="card-content">
+                        <h4>John Doe</h4>
+                        <p class="user-title">Full Stack Developer</p>
+                        <p class="user-bio">Building amazing web applications with React and Node.js</p>
+                        <div class="card-tags">
+                            <span class="tag">JavaScript</span>
+                            <span class="tag">React</span>
+                            <span class="tag">Node.js</span>
+                        </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-folder"></i> 12 Projects</span>
+                            <span><i class="fas fa-users"></i> 128 Followers</span>
+                        </div>
+                    </div>
+                    <a href="/users/1" class="card-link">View Profile</a>
+                </div>
+
+                <div class="result-card user-card" data-type="users">
+                    <img src="https://ui-avatars.com/api/?name=Sarah+Smith&size=80&background=B58863&color=fff" alt="Sarah Smith">
+                    <div class="card-content">
+                        <h4>Sarah Smith</h4>
+                        <p class="user-title">UI/UX Designer</p>
+                        <p class="user-bio">Creating beautiful and intuitive user experiences</p>
+                        <div class="card-tags">
+                            <span class="tag">Figma</span>
+                            <span class="tag">Design Systems</span>
+                            <span class="tag">Prototyping</span>
+                        </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-folder"></i> 8 Projects</span>
+                            <span><i class="fas fa-users"></i> 96 Followers</span>
+                        </div>
+                    </div>
+                    <a href="/users/2" class="card-link">View Profile</a>
+                </div>
+
+                <div class="result-card user-card" data-type="users">
+                    <img src="https://ui-avatars.com/api/?name=Mike+Johnson&size=80&background=3D4D55&color=fff" alt="Mike Johnson">
+                    <div class="card-content">
+                        <h4>Mike Johnson</h4>
+                        <p class="user-title">Backend Developer</p>
+                        <p class="user-bio">Specializing in scalable server architectures and APIs</p>
+                        <div class="card-tags">
+                            <span class="tag">Node.js</span>
+                            <span class="tag">MongoDB</span>
+                            <span class="tag">AWS</span>
+                        </div>
+                        <div class="card-meta">
+                            <span><i class="fas fa-folder"></i> 15 Projects</span>
+                            <span><i class="fas fa-users"></i> 145 Followers</span>
+                        </div>
+                    </div>
+                    <a href="/users/3" class="card-link">View Profile</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Results State -->
+        <div class="no-results" id="noResults" style="display: none;">
+            <i class="fas fa-search"></i>
+            <h3>No results found</h3>
+            <p>Try different keywords or filters</p>
+        </div>
+    </div>
+</div>
+
+<!-- GSAP Animation Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script src="/js/search.js"></script>
+<script>
+// GSAP Animations
+gsap.fromTo('.search-header',
+    { opacity: 0, y: -30 },
+    { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }
+);
+
+gsap.fromTo('.search-bar-main',
+    { opacity: 0, scale: 0.95 },
+    { opacity: 1, scale: 1, duration: 0.5, delay: 0.2, ease: 'back.out(1.2)' }
+);
+
+gsap.fromTo('.filter-tab',
+    { opacity: 0, y: 20 },
+    { opacity: 1, y: 0, duration: 0.4, stagger: 0.08, delay: 0.4, ease: 'power2.out' }
+);
+
+gsap.fromTo('.result-card',
+    { opacity: 0, y: 30 },
+    { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.6, ease: 'power2.out' }
+);
+</script>

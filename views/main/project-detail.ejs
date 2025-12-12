@@ -1,0 +1,291 @@
+<% layout("/layout/boilerplate") %>
+
+<link rel="stylesheet" href="/css/project-detail.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Project Detail Container -->
+<div class="project-detail-container">
+    <!-- Project Header -->
+    <section class="project-header">
+        <div class="header-content">
+            <div class="header-main">
+                <a href="/projects" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back to Projects</span>
+                </a>
+                
+                <div class="project-title-section">
+                    <div class="project-icon">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div>
+                        <h1>DevConnect Platform</h1>
+                        <p class="project-tagline">Connect developers and build amazing projects together</p>
+                    </div>
+                </div>
+
+                <div class="project-badges">
+                    <span class="status-badge status-active">Active</span>
+                    <span class="category-badge">Web Development</span>
+                </div>
+
+                <div class="project-actions">
+                    <button class="btn btn-primary" id="joinProjectBtn">
+                        <i class="fas fa-user-plus"></i>
+                        Join Project
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-star"></i>
+                        Star (24)
+                    </button>
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-share-alt"></i>
+                        Share
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Info Bar -->
+    <section class="project-info-bar">
+        <div class="info-item">
+            <i class="fas fa-users"></i>
+            <div>
+                <span class="info-label">Team Size</span>
+                <span class="info-value">3/5 Members</span>
+            </div>
+        </div>
+        <div class="info-item">
+            <i class="fas fa-calendar"></i>
+            <div>
+                <span class="info-label">Duration</span>
+                <span class="info-value">3 months</span>
+            </div>
+        </div>
+        <div class="info-item">
+            <i class="fas fa-signal"></i>
+            <div>
+                <span class="info-label">Difficulty</span>
+                <span class="info-value">Intermediate</span>
+            </div>
+        </div>
+        <div class="info-item">
+            <i class="fas fa-chart-line"></i>
+            <div>
+                <span class="info-label">Progress</span>
+                <span class="info-value">65%</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Content -->
+    <div class="project-content">
+        <!-- Main Content -->
+        <div class="content-main">
+            <!-- Description -->
+            <div class="content-card">
+                <h2><i class="fas fa-info-circle"></i> About This Project</h2>
+                <p>DevConnect is a collaborative platform designed to bring developers together to work on exciting projects. Whether you're looking to build your portfolio, learn new technologies, or contribute to meaningful work, DevConnect makes it easy to find the right team and project.</p>
+                <p>Our platform features real-time collaboration tools, project management capabilities, and a vibrant community of developers from around the world. Join us in building something amazing!</p>
+            </div>
+
+            <!-- Technology Stack -->
+            <div class="content-card">
+                <h2><i class="fas fa-code"></i> Technology Stack</h2>
+                <div class="tech-stack">
+                    <span class="tech-tag">JavaScript</span>
+                    <span class="tech-tag">React</span>
+                    <span class="tech-tag">Node.js</span>
+                    <span class="tech-tag">Express</span>
+                    <span class="tech-tag">MongoDB</span>
+                    <span class="tech-tag">Socket.io</span>
+                    <span class="tech-tag">JWT</span>
+                    <span class="tech-tag">GSAP</span>
+                </div>
+            </div>
+
+            <!-- Project Goals -->
+            <div class="content-card">
+                <h2><i class="fas fa-bullseye"></i> Project Goals</h2>
+                <ul class="goals-list">
+                    <li>Create a user-friendly platform for developer collaboration</li>
+                    <li>Implement real-time chat and notification system</li>
+                    <li>Build comprehensive project management tools</li>
+                    <li>Develop skill-based project recommendations</li>
+                    <li>Launch beta version within 3 months</li>
+                </ul>
+            </div>
+
+            <!-- Team Members -->
+            <div class="content-card">
+                <h2><i class="fas fa-users"></i> Team Members</h2>
+                <div class="team-grid">
+                    <div class="team-member-card">
+                        <img src="https://ui-avatars.com/api/?name=John+Doe&size=80&background=11293A&color=fff" alt="John Doe">
+                        <h3>John Doe</h3>
+                        <p class="role">Project Lead</p>
+                        <p class="skills">Full Stack • React • Node.js</p>
+                        <a href="/users/1" class="view-profile">View Profile</a>
+                    </div>
+                    <div class="team-member-card">
+                        <img src="https://ui-avatars.com/api/?name=Sarah+Smith&size=80&background=B58863&color=fff" alt="Sarah Smith">
+                        <h3>Sarah Smith</h3>
+                        <p class="role">UI/UX Designer</p>
+                        <p class="skills">Figma • Design Systems</p>
+                        <a href="/users/2" class="view-profile">View Profile</a>
+                    </div>
+                    <div class="team-member-card">
+                        <img src="https://ui-avatars.com/api/?name=Mike+Johnson&size=80&background=3D4D55&color=fff" alt="Mike Johnson">
+                        <h3>Mike Johnson</h3>
+                        <p class="role">Backend Developer</p>
+                        <p class="skills">Node.js • MongoDB • AWS</p>
+                        <a href="/users/3" class="view-profile">View Profile</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Links -->
+            <div class="content-card">
+                <h2><i class="fas fa-link"></i> Links & Resources</h2>
+                <div class="links-grid">
+                    <a href="#" class="link-card">
+                        <i class="fab fa-github"></i>
+                        <div>
+                            <h4>GitHub Repository</h4>
+                            <p>github.com/devconnect/platform</p>
+                        </div>
+                    </a>
+                    <a href="#" class="link-card">
+                        <i class="fas fa-globe"></i>
+                        <div>
+                            <h4>Live Demo</h4>
+                            <p>devconnect-demo.com</p>
+                        </div>
+                    </a>
+                    <a href="#" class="link-card">
+                        <i class="fas fa-file-alt"></i>
+                        <div>
+                            <h4>Documentation</h4>
+                            <p>docs.devconnect.com</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="content-sidebar">
+            <!-- Project Owner -->
+            <div class="sidebar-card">
+                <h3>Project Owner</h3>
+                <div class="owner-info">
+                    <img src="https://ui-avatars.com/api/?name=John+Doe&size=60&background=11293A&color=fff" alt="John Doe">
+                    <div>
+                        <h4>John Doe</h4>
+                        <p>Full Stack Developer</p>
+                        <a href="/users/1">View Profile</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Required Skills -->
+            <div class="sidebar-card">
+                <h3>Looking For</h3>
+                <div class="required-skills">
+                    <div class="skill-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Frontend Developer</span>
+                    </div>
+                    <div class="skill-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>DevOps Engineer</span>
+                    </div>
+                    <div class="skill-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>UI/UX Designer</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Stats -->
+            <div class="sidebar-card">
+                <h3>Project Stats</h3>
+                <div class="stats-list">
+                    <div class="stat-item">
+                        <span class="stat-label">Created</span>
+                        <span class="stat-value">Nov 15, 2025</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Last Updated</span>
+                        <span class="stat-value">2 hours ago</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Tasks</span>
+                        <span class="stat-value">18</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Completed</span>
+                        <span class="stat-value">10</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="sidebar-card">
+                <h3>Quick Actions</h3>
+                <div class="quick-actions">
+                    <a href="/projects/1/dashboard" class="action-link">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>View Dashboard</span>
+                    </a>
+                    <a href="/projects/1/chat" class="action-link">
+                        <i class="fas fa-comments"></i>
+                        <span>Team Chat</span>
+                    </a>
+                    <a href="/projects/1/edit" class="action-link">
+                        <i class="fas fa-edit"></i>
+                        <span>Edit Project</span>
+                    </a>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- GSAP Animation Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script>
+// Join Project Button
+document.getElementById('joinProjectBtn').addEventListener('click', function() {
+    if(confirm('Do you want to join this project?')) {
+        // In production, send POST request to /projects/1/join
+        alert('Join request sent! Project owner will review your request.');
+        this.innerHTML = '<i class="fas fa-check"></i> Request Sent';
+        this.disabled = true;
+    }
+});
+
+// GSAP Animations
+gsap.fromTo('.project-header',
+    { opacity: 0, y: -30 },
+    { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }
+);
+
+gsap.fromTo('.project-info-bar',
+    { opacity: 0, y: 20 },
+    { opacity: 1, y: 0, duration: 0.5, delay: 0.2, ease: 'power2.out' }
+);
+
+gsap.fromTo('.content-card',
+    { opacity: 0, y: 30 },
+    { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, delay: 0.4, ease: 'power2.out' }
+);
+
+gsap.fromTo('.sidebar-card',
+    { opacity: 0, x: 30 },
+    { opacity: 1, x: 0, duration: 0.5, stagger: 0.1, delay: 0.6, ease: 'power2.out' }
+);
+</script>
