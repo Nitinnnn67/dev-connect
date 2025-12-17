@@ -1,13 +1,7 @@
-/**
- * User Routes Module
- * Handles all user authentication and account management routes
- * @module routes/user
- */
-
 const express = require("express");
 const router = express.Router();
 const passport = require("passport");
-const User = require("../models/users.js");
+const User = require("../models/user.js");
 const wrapAsync = require("../utils/wrapAsync.js");
 const { saveredirectUrl, isLoggedin } = require("../utils/middleware.js");
 
@@ -83,11 +77,8 @@ const customAuthenticate = async (req, res, next) => {
     })(req, res, next);
 };
 
-/**
- * Validates registration input data
- * @param {Object} data - User registration data
- * @returns {Object} - Validation result with success boolean and message
- */
+//--------------------- Input Validation -------------------
+
 const validateRegistrationInput = (data) => {
     const { username, email, password } = data;
     
@@ -97,6 +88,11 @@ const validateRegistrationInput = (data) => {
     
     if (username.length < 3) {
         return { success: false, message: "Username must be at least 3 characters long." };
+    }
+    
+    // Check if username starts with a number
+    if (/^\d/.test(username)) {
+        return { success: false, message: "Username cannot start with a number." };
     }
     
     if (!email || email.trim().length === 0) {
@@ -117,21 +113,12 @@ const validateRegistrationInput = (data) => {
 
 // ==================== Routes ====================
 
-/**
- * GET /register
- * Display registration form
- */
 router.get("/register", (req, res) => {
     res.render("users/register.ejs", {
         title: "Register - DevConnect"
     });
 });
 
-/**
- * POST /register
- * Process user registration
- * Creates new user account and automatically logs them in
- */
 router.post("/register", wrapAsync(async (req, res) => {
     try {
         const { username, email, password, name } = req.body;
@@ -165,7 +152,7 @@ router.post("/register", wrapAsync(async (req, res) => {
         });
         
         const registeredUser = await User.register(newUser, password);
-        console.log(`New user registered: ${registeredUser.username}`);
+        
         
         // Auto-login after successful registration
         req.login(registeredUser, (err) => {
@@ -197,10 +184,7 @@ router.post("/register", wrapAsync(async (req, res) => {
     }
 }));
 
-/**
- * GET /login
- * Display login form
- */
+
 router.get("/login", (req, res) => {
     res.render("users/login.ejs", {
         title: "Login - DevConnect"
@@ -229,5 +213,47 @@ router.get("/logout", (req, res, next) => {
         res.redirect("/");
     });
 });
+
+// ==================== OAuth Routes ====================
+
+/**
+ * GET /auth/github
+ * Redirect to GitHub for authentication
+ */
+router.get('/auth/github',
+    passport.authenticate('github', { scope: ['user:email'] })
+);
+
+/**
+ * GET /auth/github/callback
+ * GitHub OAuth callback
+ */
+router.get('/auth/github/callback', 
+    passport.authenticate('github', { failureRedirect: '/login' }),
+    (req, res) => {
+        req.flash("success", `Welcome to DevConnect, ${req.user.name}!`);
+        res.redirect('/home');
+    }
+);
+
+/**
+ * GET /auth/google
+ * Redirect to Google for authentication
+ */
+router.get('/auth/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+/**
+ * GET /auth/google/callback
+ * Google OAuth callback
+ */
+router.get('/auth/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    (req, res) => {
+        req.flash("success", `Welcome to DevConnect, ${req.user.name}!`);
+        res.redirect('/home');
+    }
+);
 
 module.exports = router;
