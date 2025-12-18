@@ -11,26 +11,36 @@
         <div class="header-content">
             <div class="profile-main">
                 <div class="avatar-wrapper">
-                    <img src="https://ui-avatars.com/api/?name=User+Name&size=150&background=11293A&color=fff" alt="Profile" class="profile-avatar">
-                    <button class="avatar-edit-btn">
-                        <i class="fas fa-camera"></i>
-                    </button>
+                    <img src="<%= user.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.username)}&size=150&background=11293A&color=fff` %>" alt="Profile" class="profile-avatar">
+                    <% if (currentUser && currentUser._id.equals(user._id)) { %>
+                        <button class="avatar-edit-btn">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    <% } %>
                 </div>
                 <div class="profile-info">
-                    <h1 class="profile-name">User Name</h1>
-                    <p class="profile-username">@username</p>
-                    <p class="profile-bio">Full Stack Developer | Open Source Enthusiast | Building amazing things with code</p>
+                    <h1 class="profile-name"><%= user.name || user.username %></h1>
+                    <p class="profile-username">@<%= user.username %></p>
+                    <% if (user.bio) { %>
+                        <p class="profile-bio"><%= user.bio %></p>
+                    <% } %>
                     <div class="profile-meta">
-                        <span><i class="fas fa-map-marker-alt"></i> Location, Country</span>
-                        <span><i class="fas fa-calendar-alt"></i> Joined December 2025</span>
-                        <span><i class="fas fa-link"></i> <a href="#">website.com</a></span>
+                        <% if (user.location) { %>
+                            <span><i class="fas fa-map-marker-alt"></i> <%= user.location %></span>
+                        <% } %>
+                        <span><i class="fas fa-calendar-alt"></i> Joined <%= new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) %></span>
+                        <% if (user.website) { %>
+                            <span><i class="fas fa-link"></i> <a href="<%= user.website %>" target="_blank"><%= user.website.replace(/^https?:\/\//, '') %></a></span>
+                        <% } %>
                     </div>
                 </div>
                 <div class="profile-actions">
-                    <a href="/users/profile/edit" class="btn btn-primary">
-                        <i class="fas fa-edit"></i>
-                        <span>Edit Profile</span>
-                    </a>
+                    <% if (currentUser && currentUser._id.equals(user._id)) { %>
+                        <a href="/users/<%= user._id %>/edit" class="btn btn-primary">
+                            <i class="fas fa-edit"></i>
+                            <span>Edit Profile</span>
+                        </a>
+                    <% } %>
                     <button class="btn btn-secondary">
                         <i class="fas fa-share-alt"></i>
                         <span>Share</span>
@@ -43,20 +53,20 @@
     <!-- Profile Stats -->
     <section class="profile-stats">
         <div class="stat-item">
-            <h3>12</h3>
+            <h3><%= stats.projectCount %></h3>
             <p>Projects</p>
         </div>
         <div class="stat-item">
-            <h3>45</h3>
+            <h3><%= stats.contributions %></h3>
             <p>Contributions</p>
         </div>
         <div class="stat-item">
-            <h3>128</h3>
-            <p>Followers</p>
+            <h3><%= user.skills ? user.skills.length : 0 %></h3>
+            <p>Skills</p>
         </div>
         <div class="stat-item">
-            <h3>89</h3>
-            <p>Following</p>
+            <h3><%= projects.filter(p => p.createdBy._id.equals(user._id)).length %></h3>
+            <p>Created</p>
         </div>
     </section>
 
@@ -71,14 +81,13 @@
                     Skills
                 </h3>
                 <div class="skills-list">
-                    <span class="skill-tag">JavaScript</span>
-                    <span class="skill-tag">React</span>
-                    <span class="skill-tag">Node.js</span>
-                    <span class="skill-tag">Python</span>
-                    <span class="skill-tag">MongoDB</span>
-                    <span class="skill-tag">Git</span>
-                    <span class="skill-tag">Docker</span>
-                    <span class="skill-tag">AWS</span>
+                    <% if (user.skills && user.skills.length > 0) { %>
+                        <% user.skills.forEach(skill => { %>
+                            <span class="skill-tag"><%= skill %></span>
+                        <% }) %>
+                    <% } else { %>
+                        <p style="color: #94a3b8; font-size: 0.9rem;">No skills added yet</p>
+                    <% } %>
                 </div>
             </div>
 
@@ -89,22 +98,33 @@
                     Social Links
                 </h3>
                 <div class="social-links">
-                    <a href="#" class="social-link">
-                        <i class="fab fa-github"></i>
-                        <span>GitHub</span>
-                    </a>
-                    <a href="#" class="social-link">
-                        <i class="fab fa-linkedin"></i>
-                        <span>LinkedIn</span>
-                    </a>
-                    <a href="#" class="social-link">
-                        <i class="fab fa-twitter"></i>
-                        <span>Twitter</span>
-                    </a>
-                    <a href="#" class="social-link">
-                        <i class="fas fa-globe"></i>
-                        <span>Portfolio</span>
-                    </a>
+                    <% if (user.github) { %>
+                        <a href="<%= user.github %>" target="_blank" class="social-link">
+                            <i class="fab fa-github"></i>
+                            <span>GitHub</span>
+                        </a>
+                    <% } %>
+                    <% if (user.linkedin) { %>
+                        <a href="<%= user.linkedin %>" target="_blank" class="social-link">
+                            <i class="fab fa-linkedin"></i>
+                            <span>LinkedIn</span>
+                        </a>
+                    <% } %>
+                    <% if (user.twitter) { %>
+                        <a href="<%= user.twitter %>" target="_blank" class="social-link">
+                            <i class="fab fa-twitter"></i>
+                            <span>Twitter</span>
+                        </a>
+                    <% } %>
+                    <% if (user.portfolio) { %>
+                        <a href="<%= user.portfolio %>" target="_blank" class="social-link">
+                            <i class="fas fa-globe"></i>
+                            <span>Portfolio</span>
+                        </a>
+                    <% } %>
+                    <% if (!user.github && !user.linkedin && !user.twitter && !user.portfolio) { %>
+                        <p style="color: #94a3b8; font-size: 0.9rem;">No social links added yet</p>
+                    <% } %>
                 </div>
             </div>
 
@@ -154,105 +174,123 @@
             <!-- Tab Content: Projects -->
             <div class="tab-content active" id="projects">
                 <div class="projects-grid">
-                    <div class="project-card">
-                        <div class="project-header">
-                            <h3>Project Name</h3>
-                            <span class="project-status status-active">Active</span>
-                        </div>
-                        <p class="project-description">A brief description of the project and what it does. This is a sample project card.</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">React</span>
-                            <span class="tech-tag">Node.js</span>
-                            <span class="tech-tag">MongoDB</span>
-                        </div>
-                        <div class="project-footer">
-                            <div class="project-stats">
-                                <span><i class="fas fa-star"></i> 24</span>
-                                <span><i class="fas fa-code-branch"></i> 8</span>
+                    <% if (projects && projects.length > 0) { %>
+                        <% projects.forEach(project => { %>
+                            <div class="project-card">
+                                <div class="project-header">
+                                    <h3><%= project.title %></h3>
+                                    <span class="project-status status-<%= project.status %>"><%= project.status %></span>
+                                </div>
+                                <p class="project-description"><%= project.description.substring(0, 100) %><%= project.description.length > 100 ? '...' : '' %></p>
+                                <% if (project.techStack && project.techStack.length > 0) { %>
+                                    <div class="project-tech">
+                                        <% project.techStack.slice(0, 3).forEach(tech => { %>
+                                            <span class="tech-tag"><%= tech %></span>
+                                        <% }) %>
+                                    </div>
+                                <% } %>
+                                <div class="project-footer">
+                                    <div class="project-stats">
+                                        <span><i class="fas fa-users"></i> <%= project.members.length %></span>
+                                        <span><i class="fas fa-tasks"></i> <%= project.tasks.length %></span>
+                                    </div>
+                                    <a href="/projects/<%= project._id %>" class="project-link">View Project <i class="fas fa-arrow-right"></i></a>
+                                </div>
                             </div>
-                            <a href="#" class="project-link">View Project <i class="fas fa-arrow-right"></i></a>
+                        <% }) %>
+                    <% } else { %>
+                        <div style="text-align: center; padding: 3rem; color: #94a3b8;">
+                            <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                            <p>No projects yet</p>
                         </div>
-                    </div>
-
-                    <div class="project-card">
-                        <div class="project-header">
-                            <h3>Another Project</h3>
-                            <span class="project-status status-completed">Completed</span>
-                        </div>
-                        <p class="project-description">Another amazing project with cool features and functionality.</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">Python</span>
-                            <span class="tech-tag">Django</span>
-                        </div>
-                        <div class="project-footer">
-                            <div class="project-stats">
-                                <span><i class="fas fa-star"></i> 15</span>
-                                <span><i class="fas fa-code-branch"></i> 5</span>
-                            </div>
-                            <a href="#" class="project-link">View Project <i class="fas fa-arrow-right"></i></a>
-                        </div>
-                    </div>
-
-                    <div class="project-card">
-                        <div class="project-header">
-                            <h3>Third Project</h3>
-                            <span class="project-status status-active">Active</span>
-                        </div>
-                        <p class="project-description">Working on something exciting. Stay tuned for updates!</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">Vue.js</span>
-                            <span class="tech-tag">Express</span>
-                        </div>
-                        <div class="project-footer">
-                            <div class="project-stats">
-                                <span><i class="fas fa-star"></i> 32</span>
-                                <span><i class="fas fa-code-branch"></i> 12</span>
-                            </div>
-                            <a href="#" class="project-link">View Project <i class="fas fa-arrow-right"></i></a>
-                        </div>
-                    </div>
+                    <% } %>
                 </div>
             </div>
 
             <!-- Tab Content: Activity -->
             <div class="tab-content" id="activity">
                 <div class="activity-list">
-                    <div class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-plus"></i>
+                    <% if (projects && projects.length > 0) { %>
+                        <% 
+                        // Sort projects by creation date (most recent first)
+                        const sortedProjects = projects.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                        const recentProjects = sortedProjects.slice(0, 10);
+                        %>
+                        <% recentProjects.forEach(project => { %>
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <% if (project.createdBy._id.equals(user._id)) { %>
+                                        <i class="fas fa-plus"></i>
+                                    <% } else { %>
+                                        <i class="fas fa-user-plus"></i>
+                                    <% } %>
+                                </div>
+                                <div class="activity-content">
+                                    <% if (project.createdBy._id.equals(user._id)) { %>
+                                        <p><strong>Created a new project</strong> "<a href="/projects/<%= project._id %>"><%= project.title %></a>"</p>
+                                    <% } else { %>
+                                        <p><strong>Joined project</strong> "<a href="/projects/<%= project._id %>"><%= project.title %></a>"</p>
+                                    <% } %>
+                                    <span class="activity-time"><%= new Date(project.createdAt).toLocaleDateString() %></span>
+                                </div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <div style="text-align: center; padding: 3rem; color: #94a3b8;">
+                            <i class="fas fa-clock" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                            <p>No activity yet</p>
                         </div>
-                        <div class="activity-content">
-                            <p><strong>Created a new project</strong> "Awesome App"</p>
-                            <span class="activity-time">2 hours ago</span>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-code"></i>
-                        </div>
-                        <div class="activity-content">
-                            <p><strong>Pushed commits</strong> to "DevConnect"</p>
-                            <span class="activity-time">5 hours ago</span>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <div class="activity-icon">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <div class="activity-content">
-                            <p><strong>Starred</strong> "React Best Practices"</p>
-                            <span class="activity-time">1 day ago</span>
-                        </div>
-                    </div>
+                    <% } %>
                 </div>
             </div>
 
             <!-- Tab Content: Contributions -->
             <div class="tab-content" id="contributions">
                 <div class="contributions-content">
-                    <h3>Contribution Activity</h3>
-                    <div class="contribution-graph">
-                        <p>Contribution graph placeholder - Integration with GitHub API or custom implementation</p>
+                    <h3>Task Contributions</h3>
+                    <div class="activity-list">
+                        <% 
+                        let userTasks = [];
+                        projects.forEach(project => {
+                            project.tasks.forEach(task => {
+                                if (task.assignedTo && task.assignedTo.equals(user._id)) {
+                                    userTasks.push({
+                                        task: task,
+                                        projectTitle: project.title,
+                                        projectId: project._id
+                                    });
+                                }
+                            });
+                        });
+                        %>
+                        <% if (userTasks.length > 0) { %>
+                            <% userTasks.forEach(item => { %>
+                                <div class="activity-item">
+                                    <div class="activity-icon">
+                                        <% if (item.task.status === 'completed') { %>
+                                            <i class="fas fa-check-circle" style="color: #10b981;"></i>
+                                        <% } else if (item.task.status === 'in-progress') { %>
+                                            <i class="fas fa-spinner" style="color: #f59e0b;"></i>
+                                        <% } else { %>
+                                            <i class="fas fa-circle" style="color: #6b7280;"></i>
+                                        <% } %>
+                                    </div>
+                                    <div class="activity-content">
+                                        <p><strong><%= item.task.title %></strong> in "<a href="/projects/<%= item.projectId %>"><%= item.projectTitle %></a>"</p>
+                                        <p style="font-size: 0.85rem; color: #94a3b8; margin-top: 0.25rem;"><%= item.task.description || 'No description' %></p>
+                                        <div style="margin-top: 0.5rem;">
+                                            <span class="skill-tag" style="background-color: <%= item.task.priority === 'high' ? '#ef4444' : item.task.priority === 'medium' ? '#f59e0b' : '#10b981' %>; color: white; font-size: 0.75rem;"><%= item.task.priority %> priority</span>
+                                            <span class="skill-tag" style="background-color: <%= item.task.status === 'completed' ? '#10b981' : item.task.status === 'in-progress' ? '#f59e0b' : '#6b7280' %>; color: white; font-size: 0.75rem;"><%= item.task.status %></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        <% } else { %>
+                            <div style="text-align: center; padding: 3rem; color: #94a3b8;">
+                                <i class="fas fa-tasks" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                                <p>No task contributions yet</p>
+                            </div>
+                        <% } %>
                     </div>
                 </div>
             </div>
@@ -266,3 +304,4 @@
 <!-- Profile Page Scripts -->
 <script src="/js/profile.js"></script>
 <script src="/animations/profile-animat.js"></script>
+

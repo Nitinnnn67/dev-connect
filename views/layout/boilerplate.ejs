@@ -129,7 +129,11 @@
     </style>
 </head>
 <body>
-   <%- include("../includes/navbar.ejs") %>
+
+   <% if (typeof showNavbar === 'undefined' || showNavbar) { %>
+       <%- include("../includes/navbar.ejs") %>
+   <% } %>
+
    
    <!-- Flash Messages -->
    <div class="flash-container">

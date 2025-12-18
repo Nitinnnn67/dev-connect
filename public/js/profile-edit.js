@@ -125,7 +125,7 @@ updateSkillsHidden();
 const cancelBtn = document.getElementById('cancelBtn');
 cancelBtn.addEventListener('click', () => {
     if (confirm('Are you sure you want to discard changes?')) {
-        window.location.href = '/users/profile';
+        window.history.back();
     }
 });
 

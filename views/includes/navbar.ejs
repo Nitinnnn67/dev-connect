@@ -1,4 +1,5 @@
 <!-- Transparent Navbar -->
+<% if (currentUser) { %>
 <nav class="home-navbar">
     <div class="navbar-container">
         <div class="navbar-brand">
@@ -17,9 +18,9 @@
                 <span class="badge">3</span>
             </button>
             <div class="user-menu">
-                <img src="https://ui-avatars.com/api/?name=User&background=11293A&color=fff" alt="User" class="user-avatar">
+                <img src="https://ui-avatars.com/api/?name=<%= currentUser.name || currentUser.username %>&background=11293A&color=fff" alt="User" class="user-avatar">
                 <div class="user-dropdown">
-                    <a href="/users/profile"><i class="fas fa-user"></i> Profile</a>
+                    <a href="/users/<%= currentUser._id %>"><i class="fas fa-user"></i> Profile</a>
                     <a href="/settings"><i class="fas fa-cog"></i> Settings</a>
                     <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
                 </div>
@@ -30,6 +31,7 @@
         </button>
     </div>
 </nav>
+<% } %>
 
 <style>
 /* Transparent Navbar */

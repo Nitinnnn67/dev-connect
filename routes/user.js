@@ -115,7 +115,8 @@ const validateRegistrationInput = (data) => {
 
 router.get("/register", (req, res) => {
     res.render("users/register.ejs", {
-        title: "Register - DevConnect"
+        title: "Register - DevConnect",
+        showNavbar: false
     });
 });
 
@@ -187,7 +188,8 @@ router.post("/register", wrapAsync(async (req, res) => {
 
 router.get("/login", (req, res) => {
     res.render("users/login.ejs", {
-        title: "Login - DevConnect"
+        title: "Login - DevConnect",
+        showNavbar: false
     });
 });
 
@@ -210,7 +212,7 @@ router.get("/logout", (req, res, next) => {
             return next(err);
         }
         req.flash("success", `Goodbye, ${username}! You have been logged out successfully.`);
-        res.redirect("/");
+        res.redirect("/login");
     });
 });
 

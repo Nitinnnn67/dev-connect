@@ -40,46 +40,47 @@
     </section>
 
     <!-- Stats Section -->
-    <section class="stats-section">
-        <div class="stats-container">
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-project-diagram"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-number">0</h3>
-                    <p class="stat-label">Active Projects</p>
-                </div>
+   <!-- Stats Section -->
+<section class="stats-section">
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-project-diagram"></i>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-number">0</h3>
-                    <p class="stat-label">Team Members</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-tasks"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-number">0</h3>
-                    <p class="stat-label">Tasks Completed</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="stat-content">
-                    <h3 class="stat-number">0%</h3>
-                    <p class="stat-label">Productivity</p>
-                </div>
+            <div class="stat-content">
+                <h3 class="stat-number"><%= stats.activeProjects %></h3>
+                <p class="stat-label">Active Projects</p>
             </div>
         </div>
-    </section>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number"><%= stats.teamMembers %></h3>
+                <p class="stat-label">Team Members</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number"><%= stats.completedTasks %></h3>
+                <p class="stat-label">Tasks Completed</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="stat-content">
+                <h3 class="stat-number"><%= stats.productivity %>%</h3>
+                <p class="stat-label">Productivity</p>
+            </div>
+        </div>
+    </div>
+</section>
 
     <!-- Quick Actions Section -->
     <section class="quick-actions-section">
@@ -95,7 +96,7 @@
                 <h3>New Project</h3>
                 <p>Start a new project from scratch</p>
             </a>
-            <a href="/users/profile" class="action-card">
+            <a href="/users/<%= currentUser._id %>/edit" class="action-card">
                 <div class="action-icon">
                     <i class="fas fa-user-edit"></i>
                 </div>
@@ -120,20 +121,35 @@
     </section>
 
     <!-- Recent Activity Section -->
-    <section class="activity-section">
-        <div class="section-header">
-            <h2>Recent Activity</h2>
-            <a href="/activity" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
-        </div>
-        <div class="activity-list">
+  <!-- Recent Activity Section -->
+<section class="activity-section">
+    <div class="section-header">
+        <h2>Recent Activity</h2>
+        <a href="/projects" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="activity-list">
+        <% if (recentProjects && recentProjects.length > 0) { %>
+            <% recentProjects.forEach(project => { %>
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-folder"></i>
+                    </div>
+                    <div class="activity-content">
+                        <h4><a href="/projects/<%= project._id %>"><%= project.title %></a></h4>
+                        <p>Created by <%= project.createdBy.name || project.createdBy.username %></p>
+                        <span class="activity-time"><%= new Date(project.createdAt).toLocaleDateString() %></span>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
             <div class="activity-empty">
                 <i class="fas fa-inbox"></i>
                 <p>No recent activity yet</p>
                 <span>Start by creating your first project!</span>
             </div>
-        </div>
-    </section>
-</div>
+        <% } %>
+    </div>
+</section>
 
 <!-- GSAP Animation Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
