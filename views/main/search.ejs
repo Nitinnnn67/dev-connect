@@ -45,155 +45,127 @@
 
     <!-- Search Results -->
     <div class="search-results">
-        <div class="results-header">
-            <h2>Search Results</h2>
-            <span class="results-count">Found 127 results</span>
-        </div>
+        <% if(query && query.trim().length > 0) { %>
+            <div class="results-header">
+                <h2>Search Results for "<%= query %>"</h2>
+                <span class="results-count">Found <%= resultsCount %> result<%= resultsCount !== 1 ? 's' : '' %></span>
+            </div>
 
-        <!-- Projects Results -->
-        <div class="results-section" id="projectsResults">
-            <h3 class="section-title">Projects (48)</h3>
-            <div class="results-grid">
-                <div class="result-card project-card" data-type="projects">
-                    <div class="card-icon">
-                        <i class="fas fa-rocket"></i>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-header">
-                            <h4>DevConnect Platform</h4>
-                            <span class="status-badge status-active">Active</span>
+            <!-- Projects Results -->
+            <% if((filter === 'all' || filter === 'projects') && projects && projects.length > 0) { %>
+            <div class="results-section" id="projectsResults">
+                <h3 class="section-title"><i class="fas fa-folder"></i> Projects (<%= projects.length %>)</h3>
+                <div class="results-grid">
+                    <% projects.forEach(project => { %>
+                        <div class="result-card project-card" data-type="projects">
+                            <div class="card-icon">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <div class="card-content">
+                                <div class="card-header">
+                                    <h4><%= project.title %></h4>
+                                    <% 
+                                        let statusClass = 'status-' + project.status;
+                                        let statusText = project.status === 'in-progress' ? 'In Progress' : 
+                                                        project.status.charAt(0).toUpperCase() + project.status.slice(1);
+                                    %>
+                                    <span class="status-badge <%= statusClass %>"><%= statusText %></span>
+                                </div>
+                                <p class="card-description"><%= project.description ? project.description.substring(0, 100) : 'No description' %><%= project.description && project.description.length > 100 ? '...' : '' %></p>
+                                <% if(project.techStack && project.techStack.length > 0) { %>
+                                    <div class="card-tags">
+                                        <% project.techStack.slice(0, 3).forEach(tech => { %>
+                                            <span class="tag"><%= tech %></span>
+                                        <% }); %>
+                                        <% if(project.techStack.length > 3) { %>
+                                            <span class="tag">+<%= project.techStack.length - 3 %></span>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+                                <div class="card-meta">
+                                    <span><i class="fas fa-users"></i> <%= project.members ? project.members.length : 0 %>/<%= project.teamSize || 'Open' %></span>
+                                    <% if(project.createdBy) { %>
+                                        <span><i class="fas fa-user"></i> <%= project.createdBy.name || project.createdBy.username %></span>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <a href="/projects/<%= project._id %>" class="card-link">View Project</a>
                         </div>
-                        <p class="card-description">A collaborative platform for developers to find projects and build amazing things together</p>
-                        <div class="card-tags">
-                            <span class="tag">JavaScript</span>
-                            <span class="tag">React</span>
-                            <span class="tag">Node.js</span>
-                        </div>
-                        <div class="card-meta">
-                            <span><i class="fas fa-users"></i> 3/5</span>
-                            <span><i class="fas fa-star"></i> 24</span>
-                        </div>
-                    </div>
-                    <a href="/projects/1" class="card-link">View Project</a>
-                </div>
-
-                <div class="result-card project-card" data-type="projects">
-                    <div class="card-icon" style="background: linear-gradient(135deg, #3D4D55 0%, #11293A 100%);">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-header">
-                            <h4>AI Content Generator</h4>
-                            <span class="status-badge status-recruiting">Recruiting</span>
-                        </div>
-                        <p class="card-description">AI-powered tool to generate high-quality content for blogs and marketing</p>
-                        <div class="card-tags">
-                            <span class="tag">Python</span>
-                            <span class="tag">Django</span>
-                            <span class="tag">OpenAI</span>
-                        </div>
-                        <div class="card-meta">
-                            <span><i class="fas fa-users"></i> 1/4</span>
-                            <span><i class="fas fa-star"></i> 18</span>
-                        </div>
-                    </div>
-                    <a href="/projects/2" class="card-link">View Project</a>
-                </div>
-
-                <div class="result-card project-card" data-type="projects">
-                    <div class="card-icon" style="background: linear-gradient(135deg, #B58863 0%, #D3C3B9 100%);">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-header">
-                            <h4>Task Manager Pro</h4>
-                            <span class="status-badge status-active">Active</span>
-                        </div>
-                        <p class="card-description">Modern task management with real-time collaboration and notifications</p>
-                        <div class="card-tags">
-                            <span class="tag">React</span>
-                            <span class="tag">TypeScript</span>
-                            <span class="tag">Firebase</span>
-                        </div>
-                        <div class="card-meta">
-                            <span><i class="fas fa-users"></i> 4/6</span>
-                            <span><i class="fas fa-star"></i> 32</span>
-                        </div>
-                    </div>
-                    <a href="/projects/3" class="card-link">View Project</a>
+                    <% }); %>
                 </div>
             </div>
-        </div>
+            <% } %>
 
-        <!-- Users Results -->
-        <div class="results-section" id="usersResults">
-            <h3 class="section-title">Developers (52)</h3>
-            <div class="results-grid">
-                <div class="result-card user-card" data-type="users">
-                    <img src="https://ui-avatars.com/api/?name=John+Doe&size=80&background=11293A&color=fff" alt="John Doe">
-                    <div class="card-content">
-                        <h4>John Doe</h4>
-                        <p class="user-title">Full Stack Developer</p>
-                        <p class="user-bio">Building amazing web applications with React and Node.js</p>
-                        <div class="card-tags">
-                            <span class="tag">JavaScript</span>
-                            <span class="tag">React</span>
-                            <span class="tag">Node.js</span>
+            <!-- Users Results -->
+            <% if((filter === 'all' || filter === 'users') && users && users.length > 0) { %>
+            <div class="results-section" id="usersResults">
+                <h3 class="section-title"><i class="fas fa-users"></i> Developers (<%= users.length %>)</h3>
+                <div class="results-grid">
+                    <% users.forEach(user => { %>
+                        <div class="result-card user-card" data-type="users">
+                            <img src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(user.name || user.username) %>&size=80&background=11293A&color=fff" alt="<%= user.name || user.username %>">
+                            <div class="card-content">
+                                <h4><%= user.name || user.username %></h4>
+                                <p class="user-title">@<%= user.username %></p>
+                                <% if(user.bio) { %>
+                                    <p class="user-bio"><%= user.bio.substring(0, 80) %><%= user.bio.length > 80 ? '...' : '' %></p>
+                                <% } else { %>
+                                    <p class="user-bio">No bio available</p>
+                                <% } %>
+                                <% if(user.skills && user.skills.length > 0) { %>
+                                    <div class="card-tags">
+                                        <% user.skills.slice(0, 3).forEach(skill => { %>
+                                            <span class="tag"><%= skill %></span>
+                                        <% }); %>
+                                        <% if(user.skills.length > 3) { %>
+                                            <span class="tag">+<%= user.skills.length - 3 %></span>
+                                        <% } %>
+                                    </div>
+                                <% } %>
+                                <div class="card-meta">
+                                    <% if(user.location) { %>
+                                        <span><i class="fas fa-map-marker-alt"></i> <%= user.location %></span>
+                                    <% } %>
+                                    <% if(user.projectsCreated) { %>
+                                        <span><i class="fas fa-folder"></i> <%= user.projectsCreated.length || 0 %> Projects</span>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <a href="/users/<%= user._id %>" class="card-link">View Profile</a>
                         </div>
-                        <div class="card-meta">
-                            <span><i class="fas fa-folder"></i> 12 Projects</span>
-                            <span><i class="fas fa-users"></i> 128 Followers</span>
-                        </div>
-                    </div>
-                    <a href="/users/1" class="card-link">View Profile</a>
-                </div>
-
-                <div class="result-card user-card" data-type="users">
-                    <img src="https://ui-avatars.com/api/?name=Sarah+Smith&size=80&background=B58863&color=fff" alt="Sarah Smith">
-                    <div class="card-content">
-                        <h4>Sarah Smith</h4>
-                        <p class="user-title">UI/UX Designer</p>
-                        <p class="user-bio">Creating beautiful and intuitive user experiences</p>
-                        <div class="card-tags">
-                            <span class="tag">Figma</span>
-                            <span class="tag">Design Systems</span>
-                            <span class="tag">Prototyping</span>
-                        </div>
-                        <div class="card-meta">
-                            <span><i class="fas fa-folder"></i> 8 Projects</span>
-                            <span><i class="fas fa-users"></i> 96 Followers</span>
-                        </div>
-                    </div>
-                    <a href="/users/2" class="card-link">View Profile</a>
-                </div>
-
-                <div class="result-card user-card" data-type="users">
-                    <img src="https://ui-avatars.com/api/?name=Mike+Johnson&size=80&background=3D4D55&color=fff" alt="Mike Johnson">
-                    <div class="card-content">
-                        <h4>Mike Johnson</h4>
-                        <p class="user-title">Backend Developer</p>
-                        <p class="user-bio">Specializing in scalable server architectures and APIs</p>
-                        <div class="card-tags">
-                            <span class="tag">Node.js</span>
-                            <span class="tag">MongoDB</span>
-                            <span class="tag">AWS</span>
-                        </div>
-                        <div class="card-meta">
-                            <span><i class="fas fa-folder"></i> 15 Projects</span>
-                            <span><i class="fas fa-users"></i> 145 Followers</span>
-                        </div>
-                    </div>
-                    <a href="/users/3" class="card-link">View Profile</a>
+                    <% }); %>
                 </div>
             </div>
-        </div>
+            <% } %>
 
-        <!-- No Results State -->
-        <div class="no-results" id="noResults" style="display: none;">
-            <i class="fas fa-search"></i>
-            <h3>No results found</h3>
-            <p>Try different keywords or filters</p>
-        </div>
+            <!-- No Results State -->
+            <% if(resultsCount === 0) { %>
+            <div class="no-results" id="noResults">
+                <i class="fas fa-search"></i>
+                <h3>No results found</h3>
+                <p>Try different keywords or check your spelling</p>
+                <a href="/search" class="btn-primary">Clear Search</a>
+            </div>
+            <% } %>
+        <% } else { %>
+            <!-- Empty State -->
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <h3>Start Searching</h3>
+                <p>Search for projects, developers, or skills to get started</p>
+                <div class="popular-searches">
+                    <h4>Popular Searches:</h4>
+                    <div class="popular-tags">
+                        <a href="/search?query=React&filter=all" class="popular-tag">React</a>
+                        <a href="/search?query=Node.js&filter=all" class="popular-tag">Node.js</a>
+                        <a href="/search?query=Python&filter=all" class="popular-tag">Python</a>
+                        <a href="/search?query=JavaScript&filter=all" class="popular-tag">JavaScript</a>
+                        <a href="/search?query=AI&filter=all" class="popular-tag">AI</a>
+                        <a href="/search?query=Mobile&filter=all" class="popular-tag">Mobile</a>
+                    </div>
+                </div>
+            </div>
+        <% } %>
     </div>
 </div>
 

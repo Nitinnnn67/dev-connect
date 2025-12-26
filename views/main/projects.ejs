@@ -77,283 +77,156 @@
     <!-- Projects Grid -->
     <section class="projects-grid-section">
         <div class="projects-grid" id="projectsGrid">
-            <!-- Project Card 1 -->
-            <div class="project-card" data-status="active" data-tags="javascript,react,nodejs">
-                <div class="card-header">
-                    <div class="project-icon">
-                        <i class="fas fa-rocket"></i>
-                    </div>
-                    <span class="status-badge status-active">Active</span>
-                </div>
-                
-                <h3 class="project-title">DevConnect Platform</h3>
-                <p class="project-description">A collaborative platform for developers to find projects, connect with teams, and build amazing things together.</p>
-                
-                <div class="project-tech">
-                    <span class="tech-tag">JavaScript</span>
-                    <span class="tech-tag">React</span>
-                    <span class="tech-tag">Node.js</span>
-                    <span class="tech-tag">MongoDB</span>
-                </div>
-                
-                <div class="project-meta">
-                    <div class="meta-item">
-                        <i class="fas fa-users"></i>
-                        <span>3/5 Members</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-calendar"></i>
-                        <span>3 months</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-star"></i>
-                        <span>24</span>
-                    </div>
-                </div>
-                
-                <div class="project-footer">
-                    <div class="project-owner">
-                        <img src="https://ui-avatars.com/api/?name=John+Doe&size=32&background=11293A&color=fff" alt="Owner">
-                        <span>John Doe</span>
-                    </div>
-                    <a href="/projects/1" class="view-btn">
-                        View Details
-                        <i class="fas fa-arrow-right"></i>
+            <% if (projects.length === 0) { %>
+                <!-- Empty State -->
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <i class="fas fa-folder-open"></i>
+                    <h3>No Projects Yet</h3>
+                    <p>Be the first to create a project and start collaborating!</p>
+                    <a href="/projects/new" class="btn btn-primary" style="margin-top: 20px;">
+                        <i class="fas fa-plus"></i>
+                        Create Project
                     </a>
                 </div>
-            </div>
-
-            <!-- Project Card 2 -->
-            <div class="project-card" data-status="recruiting" data-tags="python,django,postgresql">
-                <div class="card-header">
-                    <div class="project-icon" style="background: linear-gradient(135deg, #3D4D55 0%, #11293A 100%);">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <span class="status-badge status-recruiting">Recruiting</span>
-                </div>
+            <% } else { %>
+                <% 
+                    // Icon mapping for different project types
+                    const iconMap = {
+                        'javascript': 'fa-js',
+                        'react': 'fa-react',
+                        'node': 'fa-node-js',
+                        'python': 'fa-python',
+                        'web': 'fa-globe',
+                        'mobile': 'fa-mobile-alt',
+                        'ai': 'fa-brain',
+                        'ml': 'fa-robot',
+                        'data': 'fa-database',
+                        'game': 'fa-gamepad',
+                        'blockchain': 'fa-coins',
+                        'iot': 'fa-microchip',
+                        'default': 'fa-rocket'
+                    };
+                    
+                    // Color gradients for variety
+                    const gradients = [
+                        'linear-gradient(135deg, #11293A 0%, #1e3a5f 100%)',
+                        'linear-gradient(135deg, #3D4D55 0%, #11293A 100%)',
+                        'linear-gradient(135deg, #B58863 0%, #D3C3B9 100%)',
+                        'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+                        'linear-gradient(135deg, #6f42c1 0%, #9b59b6 100%)',
+                        'linear-gradient(135deg, #fd7e14 0%, #ffc107 100%)',
+                        'linear-gradient(135deg, #dc3545 0%, #e74c3c 100%)',
+                        'linear-gradient(135deg, #17a2b8 0%, #3498db 100%)'
+                    ];
+                %>
                 
-                <h3 class="project-title">AI Content Generator</h3>
-                <p class="project-description">An AI-powered tool to generate high-quality content for blogs, social media, and marketing materials.</p>
+                <% projects.forEach((project, index) => { 
+                    // Determine status class and text
+                    let statusClass = '';
+                    let statusText = '';
+                    let statusFilter = '';
+                    
+                    if (project.status === 'open') {
+                        statusClass = 'status-recruiting';
+                        statusText = 'Recruiting';
+                        statusFilter = 'recruiting';
+                    } else if (project.status === 'in-progress') {
+                        statusClass = 'status-active';
+                        statusText = 'Active';
+                        statusFilter = 'active';
+                    } else if (project.status === 'completed') {
+                        statusClass = 'status-completed';
+                        statusText = 'Completed';
+                        statusFilter = 'completed';
+                    } else if (project.status === 'closed') {
+                        statusClass = 'status-closed';
+                        statusText = 'Closed';
+                        statusFilter = 'closed';
+                    }
+                    
+                    // Select icon based on tech stack
+                    let projectIcon = iconMap['default'];
+                    if (project.techStack && project.techStack.length > 0) {
+                        const firstTech = project.techStack[0].toLowerCase();
+                        for (let key in iconMap) {
+                            if (firstTech.includes(key)) {
+                                projectIcon = iconMap[key];
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Generate tech stack tags string for filtering
+                    const techTags = project.techStack ? project.techStack.map(t => t.toLowerCase()).join(',') : '';
+                    
+                    // Select gradient
+                    const gradient = gradients[index % gradients.length];
+                    
+                    // Owner info - check if createdBy exists
+                    const ownerName = project.createdBy ? (project.createdBy.name || project.createdBy.username) : 'Unknown User';
+                    const colors = ['11293A', 'B58863', '3D4D55', '2C5F2D', '97233F', '0E4C92', '8B4513', '2F4F4F'];
+                    const bgColor = colors[index % colors.length];
+                %>
                 
-                <div class="project-tech">
-                    <span class="tech-tag">Python</span>
-                    <span class="tech-tag">Django</span>
-                    <span class="tech-tag">PostgreSQL</span>
-                    <span class="tech-tag">OpenAI</span>
-                </div>
-                
-                <div class="project-meta">
-                    <div class="meta-item">
-                        <i class="fas fa-users"></i>
-                        <span>1/4 Members</span>
+                <div class="project-card" data-status="<%= statusFilter %>" data-tags="<%= techTags %>">
+                    <div class="card-header">
+                        <div class="project-icon" style="background: <%= gradient %>;">
+                            <i class="fas <%= projectIcon %>"></i>
+                        </div>
+                        <span class="status-badge <%= statusClass %>"><%= statusText %></span>
                     </div>
-                    <div class="meta-item">
-                        <i class="fas fa-calendar"></i>
-                        <span>2 months</span>
+                    
+                    <h3 class="project-title"><%= project.title %></h3>
+                    <p class="project-description">
+                        <%= project.description.length > 120 ? project.description.substring(0, 120) + '...' : project.description %>
+                    </p>
+                    
+                    <div class="project-tech">
+                        <% if (project.techStack && project.techStack.length > 0) { %>
+                            <% project.techStack.slice(0, 4).forEach(tech => { %>
+                                <span class="tech-tag"><%= tech %></span>
+                            <% }); %>
+                            <% if (project.techStack.length > 4) { %>
+                                <span class="tech-tag">+<%= project.techStack.length - 4 %></span>
+                            <% } %>
+                        <% } else { %>
+                            <span class="tech-tag">General</span>
+                        <% } %>
                     </div>
-                    <div class="meta-item">
-                        <i class="fas fa-star"></i>
-                        <span>18</span>
+                    
+                    <div class="project-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-users"></i>
+                            <span><%= project.members.length %><% if (project.teamSize) { %>/<%= project.teamSize %><% } %> Members</span>
+                        </div>
+                        <% if (project.duration) { %>
+                            <div class="meta-item">
+                                <i class="fas fa-calendar"></i>
+                                <span><%= project.duration %></span>
+                            </div>
+                        <% } %>
+                        <div class="meta-item">
+                            <i class="fas fa-tasks"></i>
+                            <span><%= project.tasks ? project.tasks.length : 0 %></span>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="project-footer">
-                    <div class="project-owner">
-                        <img src="https://ui-avatars.com/api/?name=Sarah+Smith&size=32&background=B58863&color=fff" alt="Owner">
-                        <span>Sarah Smith</span>
-                    </div>
-                    <a href="/projects/2" class="view-btn">
-                        View Details
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Project Card 3 -->
-            <div class="project-card" data-status="active" data-tags="react,typescript,firebase">
-                <div class="card-header">
-                    <div class="project-icon" style="background: linear-gradient(135deg, #B58863 0%, #D3C3B9 100%);">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                    <span class="status-badge status-active">Active</span>
-                </div>
-                
-                <h3 class="project-title">Task Manager Pro</h3>
-                <p class="project-description">Modern task management application with real-time collaboration and smart notifications.</p>
-                
-                <div class="project-tech">
-                    <span class="tech-tag">React</span>
-                    <span class="tech-tag">TypeScript</span>
-                    <span class="tech-tag">Firebase</span>
-                </div>
-                
-                <div class="project-meta">
-                    <div class="meta-item">
-                        <i class="fas fa-users"></i>
-                        <span>4/6 Members</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-calendar"></i>
-                        <span>4 months</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-star"></i>
-                        <span>32</span>
-                    </div>
-                </div>
-                
-                <div class="project-footer">
-                    <div class="project-owner">
-                        <img src="https://ui-avatars.com/api/?name=Mike+Johnson&size=32&background=3D4D55&color=fff" alt="Owner">
-                        <span>Mike Johnson</span>
-                    </div>
-                    <a href="/projects/3" class="view-btn">
-                        View Details
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Project Card 4 -->
-            <div class="project-card" data-status="completed" data-tags="vue,nodejs,mongodb">
-                <div class="card-header">
-                    <div class="project-icon" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <span class="status-badge status-completed">Completed</span>
-                </div>
-                
-                <h3 class="project-title">E-Commerce Platform</h3>
-                <p class="project-description">Full-featured e-commerce solution with payment integration and inventory management.</p>
-                
-                <div class="project-tech">
-                    <span class="tech-tag">Vue.js</span>
-                    <span class="tech-tag">Node.js</span>
-                    <span class="tech-tag">MongoDB</span>
-                    <span class="tech-tag">Stripe</span>
-                </div>
-                
-                <div class="project-meta">
-                    <div class="meta-item">
-                        <i class="fas fa-users"></i>
-                        <span>5/5 Members</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-calendar"></i>
-                        <span>Completed</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-star"></i>
-                        <span>45</span>
-                    </div>
-                </div>
-                
-                <div class="project-footer">
-                    <div class="project-owner">
-                        <img src="https://ui-avatars.com/api/?name=Emily+Brown&size=32&background=11293A&color=fff" alt="Owner">
-                        <span>Emily Brown</span>
-                    </div>
-                    <a href="/projects/4" class="view-btn">
-                        View Details
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Project Card 5 -->
-            <div class="project-card" data-status="recruiting" data-tags="react,graphql,aws">
-                <div class="card-header">
-                    <div class="project-icon" style="background: linear-gradient(135deg, #6f42c1 0%, #9b59b6 100%);">
-                        <i class="fas fa-network-wired"></i>
-                    </div>
-                    <span class="status-badge status-recruiting">Recruiting</span>
-                </div>
-                
-                <h3 class="project-title">Social Network Analytics</h3>
-                <p class="project-description">Advanced analytics platform for social media data visualization and insights.</p>
-                
-                <div class="project-tech">
-                    <span class="tech-tag">React</span>
-                    <span class="tech-tag">GraphQL</span>
-                    <span class="tech-tag">AWS</span>
-                    <span class="tech-tag">D3.js</span>
-                </div>
-                
-                <div class="project-meta">
-                    <div class="meta-item">
-                        <i class="fas fa-users"></i>
-                        <span>2/5 Members</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-calendar"></i>
-                        <span>3 months</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-star"></i>
-                        <span>27</span>
+                    
+                    <div class="project-footer">
+                        <div class="project-owner">
+                            <img src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(ownerName) %>&size=32&background=<%= bgColor %>&color=fff" alt="<%= ownerName %>">
+                            <span><%= ownerName %></span>
+                        </div>
+                        <a href="/projects/<%= project._id %>" class="view-btn">
+                            View Details
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
                     </div>
                 </div>
-                
-                <div class="project-footer">
-                    <div class="project-owner">
-                        <img src="https://ui-avatars.com/api/?name=Alex+Wilson&size=32&background=B58863&color=fff" alt="Owner">
-                        <span>Alex Wilson</span>
-                    </div>
-                    <a href="/projects/5" class="view-btn">
-                        View Details
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Project Card 6 -->
-            <div class="project-card" data-status="active" data-tags="python,flask,docker">
-                <div class="card-header">
-                    <div class="project-icon" style="background: linear-gradient(135deg, #fd7e14 0%, #ffc107 100%);">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <span class="status-badge status-active">Active</span>
-                </div>
-                
-                <h3 class="project-title">Automation Bot Framework</h3>
-                <p class="project-description">Flexible framework for building automation bots for various platforms and workflows.</p>
-                
-                <div class="project-tech">
-                    <span class="tech-tag">Python</span>
-                    <span class="tech-tag">Flask</span>
-                    <span class="tech-tag">Docker</span>
-                    <span class="tech-tag">Redis</span>
-                </div>
-                
-                <div class="project-meta">
-                    <div class="meta-item">
-                        <i class="fas fa-users"></i>
-                        <span>3/4 Members</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-calendar"></i>
-                        <span>2 months</span>
-                    </div>
-                    <div class="meta-item">
-                        <i class="fas fa-star"></i>
-                        <span>19</span>
-                    </div>
-                </div>
-                
-                <div class="project-footer">
-                    <div class="project-owner">
-                        <img src="https://ui-avatars.com/api/?name=Chris+Lee&size=32&background=3D4D55&color=fff" alt="Owner">
-                        <span>Chris Lee</span>
-                    </div>
-                    <a href="/projects/6" class="view-btn">
-                        View Details
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
+                <% }); %>
+            <% } %>
         </div>
 
-        <!-- Empty State -->
+        <!-- Empty State for Search/Filter -->
         <div class="empty-state" id="emptyState" style="display: none;">
             <i class="fas fa-search"></i>
             <h3>No Projects Found</h3>

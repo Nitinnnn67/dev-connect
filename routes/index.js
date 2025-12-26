@@ -78,7 +78,7 @@ router.get("/users/profile", isLoggedin, wrapAsync(async(req, res) => {
 }));
 
 // View user profile
-router.get("/users/:id", wrapAsync(async(req, res) => {
+router.get("/users/:id", isLoggedin, wrapAsync(async(req, res) => {
     const { id } = req.params;
     
     const user = await User.findById(id)
@@ -153,6 +153,8 @@ router.put("/users/:id", isLoggedin, wrapAsync(async(req, res) => {
         return res.redirect(`/users/${id}`);
     }
     
+    console.log("Received form data:", req.body);
+    
     const { 
         fullName, 
         bio, 
@@ -175,7 +177,7 @@ router.put("/users/:id", isLoggedin, wrapAsync(async(req, res) => {
         skillsArray = skills.split(',').map(s => s.trim()).filter(s => s);
     }
     
-    await User.findByIdAndUpdate(id, {
+    const updateData = {
         name: fullName,
         bio,
         skills: skillsArray,
@@ -189,7 +191,13 @@ router.put("/users/:id", isLoggedin, wrapAsync(async(req, res) => {
         portfolio,
         profilePublic: profilePublic === 'on',
         showEmail: showEmail === 'on'
-    });
+    };
+    
+    console.log("Updating with data:", updateData);
+    
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
+    
+    console.log("Updated user:", updatedUser);
     
     req.flash("success", "Profile updated successfully!");
     res.redirect(`/users/${id}`);
@@ -198,11 +206,58 @@ router.put("/users/:id", isLoggedin, wrapAsync(async(req, res) => {
 // ==================== Search ====================
 
 // Search projects and users
-router.get("/search", wrapAsync(async(req, res) => {
+router.get("/search", isLoggedin, wrapAsync(async(req, res) => {
     const { query, filter } = req.query;
-    // TODO: Implement search with MongoDB queries
+    
+    let projects = [];
+    let users = [];
+    let resultsCount = 0;
+    
+    if (query && query.trim().length > 0) {
+        const searchQuery = query.trim();
+        const searchRegex = new RegExp(searchQuery, 'i');
+        
+        // Search projects if filter is 'all' or 'projects'
+        if (!filter || filter === 'all' || filter === 'projects') {
+            projects = await Project.find({
+                $or: [
+                    { title: searchRegex },
+                    { description: searchRegex },
+                    { techStack: { $in: [searchRegex] } },
+                    { requiredSkills: { $in: [searchRegex] } }
+                ]
+            })
+            .populate('createdBy', 'name username')
+            .populate('members', 'name username')
+            .sort({ createdAt: -1 })
+            .limit(50);
+        }
+        
+        // Search users if filter is 'all' or 'users'
+        if (!filter || filter === 'all' || filter === 'users') {
+            users = await User.find({
+                $or: [
+                    { name: searchRegex },
+                    { username: searchRegex },
+                    { bio: searchRegex },
+                    { skills: { $in: [searchRegex] } },
+                    { location: searchRegex }
+                ]
+            })
+            .sort({ createdAt: -1 })
+            .limit(50);
+        }
+        
+        resultsCount = projects.length + users.length;
+    }
+    
     res.render("main/search.ejs", {
-        title: "Search - DevConnect"
+        title: "Search - DevConnect",
+        query: query || '',
+        filter: filter || 'all',
+        projects,
+        users,
+        resultsCount
     });
 }));
 
@@ -227,8 +282,72 @@ router.put("/notifications/:id/read", isLoggedin, wrapAsync(async(req, res) => {
 
 // Settings page
 router.get("/settings", isLoggedin, wrapAsync(async(req, res) => {
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+        req.flash("error", "User not found!");
+        return res.redirect("/home");
+    }
+    
     res.render("main/settings.ejs", {
-        title: "Settings - DevConnect"
+        title: "Settings - DevConnect",
+        user
+    });
+}));
+
+// Update password
+router.post("/settings/password", isLoggedin, wrapAsync(async(req, res) => {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        req.flash("error", "All password fields are required!");
+        return res.redirect("/settings");
+    }
+    
+    if (newPassword !== confirmPassword) {
+        req.flash("error", "New passwords do not match!");
+        return res.redirect("/settings");
+    }
+    
+    if (newPassword.length < 6) {
+        req.flash("error", "Password must be at least 6 characters long!");
+        return res.redirect("/settings");
+    }
+    
+    const user = await User.findById(req.user._id);
+    
+    try {
+        await user.changePassword(currentPassword, newPassword);
+        req.flash("success", "Password updated successfully!");
+    } catch (error) {
+        req.flash("error", "Current password is incorrect!");
+    }
+    
+    res.redirect("/settings");
+}));
+
+// Delete account
+router.delete("/settings/account", isLoggedin, wrapAsync(async(req, res) => {
+    const userId = req.user._id;
+    
+    // Delete all projects created by user
+    await Project.deleteMany({ createdBy: userId });
+    
+    // Remove user from all projects they're member of
+    await Project.updateMany(
+        { members: userId },
+        { $pull: { members: userId } }
+    );
+    
+    // Delete user account
+    await User.findByIdAndDelete(userId);
+    
+    req.logout((err) => {
+        if (err) {
+            console.error("Logout error:", err);
+        }
+        req.flash("success", "Your account has been deleted successfully.");
+        res.redirect("/");
     });
 }));
 

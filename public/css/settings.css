@@ -555,6 +555,14 @@ body {
     background: #333;
 }
 
+.integration-icon.linkedin {
+    background: #0077B5;
+}
+
+.integration-icon.twitter {
+    background: #1DA1F2;
+}
+
 .integration-icon.slack {
     background: #4A154B;
 }
@@ -580,6 +588,22 @@ body {
     font-size: 0.875rem;
     color: var(--surface-variant);
     margin: 0;
+}
+
+.connected-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 1rem;
+    background: #d4edda;
+    color: #155724;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.connected-badge i {
+    font-size: 1rem;
 }
 
 /* Plan Info */

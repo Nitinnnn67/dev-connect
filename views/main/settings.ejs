@@ -66,58 +66,55 @@
                     <h3>Basic Information</h3>
                     <div class="form-group">
                         <label>Email Address</label>
-                        <input type="email" value="john.doe@example.com" readonly>
+                        <input type="email" value="<%= currentUser.email %>" readonly>
                         <small>Your email is verified <i class="fas fa-check-circle" style="color: #28a745;"></i></small>
                     </div>
 
                     <div class="form-group">
                         <label>Username</label>
-                        <input type="text" value="johndoe123">
+                        <input type="text" value="<%= currentUser.username %>" readonly>
                         <small>This is your unique identifier on DevConnect</small>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>First Name</label>
-                            <input type="text" value="John">
-                        </div>
-                        <div class="form-group">
-                            <label>Last Name</label>
-                            <input type="text" value="Doe">
-                        </div>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" value="<%= currentUser.name || '' %>" readonly>
+                        <small>Update your name in <a href="/users/<%= currentUser._id %>/edit" style="color: var(--tertiary-color);">profile settings</a></small>
                     </div>
 
-                    <button class="btn btn-primary">Save Changes</button>
+                    <a href="/users/<%= currentUser._id %>/edit" class="btn btn-primary">Edit Profile</a>
                 </div>
 
-                <div class="settings-card">
-                    <h3>Change Password</h3>
-                    <div class="form-group">
-                        <label>Current Password</label>
-                        <input type="password" placeholder="Enter current password">
-                    </div>
+                <form action="/settings/password" method="POST">
+                    <div class="settings-card">
+                        <h3>Change Password</h3>
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" name="currentPassword" placeholder="Enter current password" required>
+                        </div>
 
-                    <div class="form-group">
-                        <label>New Password</label>
-                        <input type="password" placeholder="Enter new password">
-                    </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" name="newPassword" placeholder="Enter new password (min 6 characters)" required minlength="6">
+                        </div>
 
-                    <div class="form-group">
-                        <label>Confirm New Password</label>
-                        <input type="password" placeholder="Confirm new password">
-                    </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" name="confirmPassword" placeholder="Confirm new password" required minlength="6">
+                        </div>
 
-                    <button class="btn btn-primary">Update Password</button>
-                </div>
+                        <button type="submit" class="btn btn-primary">Update Password</button>
+                    </div>
+                </form>
 
                 <div class="settings-card danger-zone">
                     <h3><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
                     <div class="danger-action">
                         <div>
                             <h4>Delete Account</h4>
-                            <p>Permanently delete your account and all associated data</p>
+                            <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
                         </div>
-                        <button class="btn btn-danger">Delete Account</button>
+                        <button class="btn btn-danger" id="deleteAccountBtn">Delete Account</button>
                     </div>
                 </div>
             </div>
@@ -130,6 +127,12 @@
                 </div>
 
                 <div class="settings-card">
+                    <h3>Profile Information</h3>
+                    <p>Manage your profile details including bio, skills, and social links.</p>
+                    <a href="/users/<%= currentUser._id %>/edit" class="btn btn-primary">Edit Profile</a>
+                </div>
+
+                <div class="settings-card">
                     <h3>Profile Visibility</h3>
                     <div class="toggle-group">
                         <div class="toggle-item">
@@ -138,7 +141,7 @@
                                 <p>Allow others to view your profile and projects</p>
                             </div>
                             <label class="toggle-switch">
-                                <input type="checkbox" checked>
+                                <input type="checkbox" <%= currentUser.profilePublic !== false ? 'checked' : '' %>>
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
@@ -149,49 +152,14 @@
                                 <p>Display your email address to other users</p>
                             </div>
                             <label class="toggle-switch">
-                                <input type="checkbox">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-
-                        <div class="toggle-item">
-                            <div>
-                                <h4>Show social links</h4>
-                                <p>Display your social media links on your profile</p>
-                            </div>
-                            <label class="toggle-switch">
-                                <input type="checkbox" checked>
+                                <input type="checkbox" <%= currentUser.showEmail ? 'checked' : '' %>>
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
                     </div>
-                </div>
-
-                <div class="settings-card">
-                    <h3>Profile Preferences</h3>
-                    <div class="form-group">
-                        <label>Preferred Role</label>
-                        <select>
-                            <option>Full Stack Developer</option>
-                            <option>Frontend Developer</option>
-                            <option>Backend Developer</option>
-                            <option>UI/UX Designer</option>
-                            <option>DevOps Engineer</option>
-                            <option>Mobile Developer</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Experience Level</label>
-                        <select>
-                            <option>Beginner</option>
-                            <option selected>Intermediate</option>
-                            <option>Advanced</option>
-                            <option>Expert</option>
-                        </select>
-                    </div>
-
-                    <button class="btn btn-primary">Save Preferences</button>
+                    <p style="margin-top: 1rem; color: var(--surface-variant); font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i> These settings can be updated in your <a href="/users/<%= currentUser._id %>/edit" style="color: var(--tertiary-color);">profile edit page</a>
+                    </p>
                 </div>
             </div>
 
@@ -461,49 +429,77 @@
                 <div class="settings-card">
                     <h3>Connected Accounts</h3>
                     <div class="integrations-list">
+                        <% if(currentUser.github) { %>
                         <div class="integration-item connected">
                             <div class="integration-icon github">
                                 <i class="fab fa-github"></i>
                             </div>
                             <div class="integration-info">
                                 <h4>GitHub</h4>
-                                <p>Connected as @johndoe123</p>
+                                <p>Connected: <%= currentUser.github %></p>
                             </div>
-                            <button class="btn btn-secondary-small">Disconnect</button>
+                            <span class="connected-badge"><i class="fas fa-check-circle"></i> Connected</span>
                         </div>
-
+                        <% } else { %>
                         <div class="integration-item">
-                            <div class="integration-icon slack">
-                                <i class="fab fa-slack"></i>
+                            <div class="integration-icon github">
+                                <i class="fab fa-github"></i>
                             </div>
                             <div class="integration-info">
-                                <h4>Slack</h4>
-                                <p>Get notifications in Slack</p>
+                                <h4>GitHub</h4>
+                                <p>Connect your GitHub account</p>
                             </div>
-                            <button class="btn btn-primary-small">Connect</button>
+                            <a href="/users/<%= currentUser._id %>/edit" class="btn btn-primary-small">Add in Profile</a>
                         </div>
+                        <% } %>
 
-                        <div class="integration-item">
-                            <div class="integration-icon discord">
-                                <i class="fab fa-discord"></i>
+                        <% if(currentUser.linkedin) { %>
+                        <div class="integration-item connected">
+                            <div class="integration-icon linkedin">
+                                <i class="fab fa-linkedin"></i>
                             </div>
                             <div class="integration-info">
-                                <h4>Discord</h4>
-                                <p>Share updates with your Discord server</p>
+                                <h4>LinkedIn</h4>
+                                <p>Connected: <%= currentUser.linkedin %></p>
                             </div>
-                            <button class="btn btn-primary-small">Connect</button>
+                            <span class="connected-badge"><i class="fas fa-check-circle"></i> Connected</span>
                         </div>
-
+                        <% } else { %>
                         <div class="integration-item">
-                            <div class="integration-icon trello">
-                                <i class="fab fa-trello"></i>
+                            <div class="integration-icon linkedin">
+                                <i class="fab fa-linkedin"></i>
                             </div>
                             <div class="integration-info">
-                                <h4>Trello</h4>
-                                <p>Sync your tasks with Trello boards</p>
+                                <h4>LinkedIn</h4>
+                                <p>Connect your LinkedIn profile</p>
                             </div>
-                            <button class="btn btn-primary-small">Connect</button>
+                            <a href="/users/<%= currentUser._id %>/edit" class="btn btn-primary-small">Add in Profile</a>
                         </div>
+                        <% } %>
+
+                        <% if(currentUser.twitter) { %>
+                        <div class="integration-item connected">
+                            <div class="integration-icon twitter">
+                                <i class="fab fa-twitter"></i>
+                            </div>
+                            <div class="integration-info">
+                                <h4>Twitter</h4>
+                                <p>Connected: <%= currentUser.twitter %></p>
+                            </div>
+                            <span class="connected-badge"><i class="fas fa-check-circle"></i> Connected</span>
+                        </div>
+                        <% } else { %>
+                        <div class="integration-item">
+                            <div class="integration-icon twitter">
+                                <i class="fab fa-twitter"></i>
+                            </div>
+                            <div class="integration-info">
+                                <h4>Twitter</h4>
+                                <p>Connect your Twitter account</p>
+                            </div>
+                            <a href="/users/<%= currentUser._id %>/edit" class="btn btn-primary-small">Add in Profile</a>
+                        </div>
+                        <% } %>
                     </div>
                 </div>
             </div>
@@ -599,6 +595,27 @@
 
 <script src="/js/settings.js"></script>
 <script>
+// Delete Account Confirmation
+const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+if(deleteAccountBtn) {
+    deleteAccountBtn.addEventListener('click', function() {
+        const confirmed = confirm('⚠️ WARNING: Are you sure you want to delete your account?\n\nThis action will:\n• Delete all your projects\n• Remove you from all teams\n• Permanently delete all your data\n\nThis action CANNOT be undone!');
+        
+        if(confirmed) {
+            const doubleConfirm = confirm('This is your last chance!\n\nType your confirmation by clicking OK to permanently delete your account.');
+            
+            if(doubleConfirm) {
+                // Create a form and submit DELETE request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/settings/account?_method=DELETE';
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    });
+}
+
 // GSAP Animations
 gsap.fromTo('.settings-header',
     { opacity: 0, y: -30 },

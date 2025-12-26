@@ -1,0 +1,702 @@
+<% layout("/layout/boilerplate") %>
+
+<link rel="stylesheet" href="/css/project-new.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Edit Project Container -->
+<div class="create-project-container">
+    <div class="create-wrapper">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <a href="/projects/<%= project._id %>" class="back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+                    <div>
+                        <h1>Edit Project</h1>
+                        <p>Update your project information</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Form -->
+        <form id="projectForm" action="/projects/<%= project._id %>?_method=PUT" method="POST">
+            <div class="form-content">
+                <!-- Main Column -->
+                <div class="form-main">
+                    <!-- Basic Information -->
+                    <div class="form-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-info-circle"></i>
+                            Basic Information
+                        </h2>
+                        
+                        <div class="form-group">
+                            <label for="title">Project Title *</label>
+                            <input type="text" id="title" name="title" value="<%= project.title %>" placeholder="Enter your project name" required minlength="3" maxlength="100">
+                            <span class="help-text">Give your project a clear, descriptive name</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Project Description *</label>
+                            <textarea id="description" name="description" rows="8" placeholder="Describe your project in detail..." required minlength="50" maxlength="2000"><%= project.description %></textarea>
+                            <span class="char-count"><%= project.description ? project.description.length : 0 %> / 2000</span>
+                            <span class="help-text">At least 50 characters - be descriptive!</span>
+                        </div>
+                    </div>
+
+                    <!-- Project Details -->
+                    <div class="form-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-cogs"></i>
+                            Project Details
+                        </h2>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="teamSize">Team Size *</label>
+                                <input type="number" id="teamSize" name="teamSize" value="<%= project.teamSize %>" placeholder="e.g., 5" required min="1" max="100">
+                                <span class="help-text">Maximum number of team members</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="duration">Expected Duration *</label>
+                                <input type="text" id="duration" name="duration" value="<%= project.duration %>" placeholder="e.g., 3 months" required>
+                                <span class="help-text">How long will this project take?</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="status">Project Status *</label>
+                                <select id="status" name="status" required>
+                                    <option value="open" <%= project.status === 'open' ? 'selected' : '' %>>Open - Recruiting members</option>
+                                    <option value="in-progress" <%= project.status === 'in-progress' ? 'selected' : '' %>>In Progress - Active development</option>
+                                    <option value="completed" <%= project.status === 'completed' ? 'selected' : '' %>>Completed - Project finished</option>
+                                    <option value="closed" <%= project.status === 'closed' ? 'selected' : '' %>>Closed - Not accepting members</option>
+                                </select>
+                                <span class="help-text">Current status of your project</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technology Stack -->
+                    <div class="form-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-code"></i>
+                            Technology Stack *
+                        </h2>
+
+                        <div class="tech-input-wrapper">
+                            <div class="tech-display" id="techDisplay">
+                                <!-- Existing technologies will be loaded here -->
+                                <% if(project.techStack && project.techStack.length > 0) { %>
+                                    <% project.techStack.forEach(tech => { %>
+                                        <span class="tech-tag"><%= tech %><button type="button" class="remove-tech">&times;</button></span>
+                                    <% }); %>
+                                <% } %>
+                            </div>
+                            <div class="tech-input-group">
+                                <input type="text" id="techInput" placeholder="Add technology (e.g., React, Node.js)">
+                                <button type="button" class="btn btn-primary" id="addTechBtn">
+                                    <i class="fas fa-plus"></i>
+                                    Add
+                                </button>
+                            </div>
+                            <input type="hidden" id="techHidden" name="techStack" value="<%= project.techStack ? project.techStack.join(',') : '' %>" required>
+                            <span class="help-text">Add at least one technology</span>
+                            
+                            <div class="quick-add-tech">
+                                <p>Quick add:</p>
+                                <button type="button" class="quick-tech-btn" data-tech="JavaScript">JavaScript</button>
+                                <button type="button" class="quick-tech-btn" data-tech="TypeScript">TypeScript</button>
+                                <button type="button" class="quick-tech-btn" data-tech="React">React</button>
+                                <button type="button" class="quick-tech-btn" data-tech="Node.js">Node.js</button>
+                                <button type="button" class="quick-tech-btn" data-tech="Python">Python</button>
+                                <button type="button" class="quick-tech-btn" data-tech="MongoDB">MongoDB</button>
+                                <button type="button" class="quick-tech-btn" data-tech="PostgreSQL">PostgreSQL</button>
+                                <button type="button" class="quick-tech-btn" data-tech="Docker">Docker</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Required Skills -->
+                    <div class="form-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-users-cog"></i>
+                            Required Skills & Roles *
+                        </h2>
+
+                        <div class="skills-input-wrapper">
+                            <div class="skills-display" id="skillsDisplay">
+                                <!-- Existing skills will be loaded here -->
+                                <% if(project.requiredSkills && project.requiredSkills.length > 0) { %>
+                                    <% project.requiredSkills.forEach(skill => { %>
+                                        <span class="skill-tag"><%= skill %><button type="button" class="remove-skill">&times;</button></span>
+                                    <% }); %>
+                                <% } %>
+                            </div>
+                            <div class="skill-input-group">
+                                <input type="text" id="skillInput" placeholder="Add required skill or role">
+                                <button type="button" class="btn btn-primary" id="addSkillBtn">
+                                    <i class="fas fa-plus"></i>
+                                    Add
+                                </button>
+                            </div>
+                            <input type="hidden" id="skillsHidden" name="requiredSkills" value="<%= project.requiredSkills ? project.requiredSkills.join(',') : '' %>" required>
+                            <span class="help-text">Add at least one required skill or role</span>
+                            
+                            <div class="quick-add-skills">
+                                <p>Common roles:</p>
+                                <button type="button" class="quick-skill-btn" data-skill="Frontend Developer">Frontend Developer</button>
+                                <button type="button" class="quick-skill-btn" data-skill="Backend Developer">Backend Developer</button>
+                                <button type="button" class="quick-skill-btn" data-skill="Full Stack Developer">Full Stack Developer</button>
+                                <button type="button" class="quick-skill-btn" data-skill="UI/UX Designer">UI/UX Designer</button>
+                                <button type="button" class="quick-skill-btn" data-skill="DevOps Engineer">DevOps Engineer</button>
+                                <button type="button" class="quick-skill-btn" data-skill="Data Scientist">Data Scientist</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Task Management -->
+                    <div class="form-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-tasks"></i>
+                            Project Tasks
+                        </h2>
+
+                        <div class="tasks-wrapper">
+                            <!-- Existing Tasks -->
+                            <div id="tasksList">
+                                <% if(project.tasks && project.tasks.length > 0) { %>
+                                    <% project.tasks.forEach((task, index) => { %>
+                                        <div class="task-edit-item" data-task-index="<%= index %>">
+                                            <div class="task-edit-header">
+                                                <input type="text" class="task-title-input" value="<%= task.title %>" placeholder="Task title">
+                                                <button type="button" class="btn-icon btn-danger" onclick="removeTask(<%= index %>)">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                            <textarea class="task-desc-input" placeholder="Task description"><%= task.description || '' %></textarea>
+                                            <div class="task-meta-inputs">
+                                                <select class="task-priority-input">
+                                                    <option value="low" <%= task.priority === 'low' ? 'selected' : '' %>>Low Priority</option>
+                                                    <option value="medium" <%= task.priority === 'medium' ? 'selected' : '' %>>Medium Priority</option>
+                                                    <option value="high" <%= task.priority === 'high' ? 'selected' : '' %>>High Priority</option>
+                                                </select>
+                                                <select class="task-status-input">
+                                                    <option value="todo" <%= task.status === 'todo' ? 'selected' : '' %>>To Do</option>
+                                                    <option value="in-progress" <%= task.status === 'in-progress' ? 'selected' : '' %>>In Progress</option>
+                                                    <option value="completed" <%= task.status === 'completed' ? 'selected' : '' %>>Completed</option>
+                                                </select>
+                                                <input type="date" class="task-date-input" value="<%= task.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '' %>" placeholder="Due date">
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                <% } else { %>
+                                    <p style="color: #94a3b8; text-align: center; padding: 1rem;">No tasks yet. Add your first task below!</p>
+                                <% } %>
+                            </div>
+
+                            <!-- Add New Task Button -->
+                            <button type="button" class="btn btn-secondary" id="addTaskBtn" style="width: 100%; margin-top: 1rem;">
+                                <i class="fas fa-plus"></i>
+                                Add New Task
+                            </button>
+
+                            <input type="hidden" id="tasksHidden" name="tasks" value="">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <aside class="form-sidebar">
+                    <!-- Quick Tips -->
+                    <div class="form-card tips-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-lightbulb"></i>
+                            Quick Tips
+                        </h2>
+                        
+                        <ul class="tips-list">
+                            <li>Update your project details as it evolves</li>
+                            <li>Keep technology stack current</li>
+                            <li>Adjust team size if needed</li>
+                            <li>Update required skills based on needs</li>
+                            <li>Changes are saved immediately</li>
+                        </ul>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-large" id="submitBtn">
+                            <i class="fas fa-save"></i>
+                            Update Project
+                        </button>
+                        <a href="/projects/<%= project._id %>" class="btn btn-secondary">Cancel</a>
+                        
+                        <!-- Delete Button -->
+                        <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #e2e8f0;">
+                            <button type="button" class="btn btn-danger btn-large" id="deleteBtn" style="background: #ef4444;">
+                                <i class="fas fa-trash"></i>
+                                Delete Project
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </form>
+
+        <!-- Delete Confirmation Form (Hidden) -->
+        <form id="deleteForm" action="/projects/<%= project._id %>?_method=DELETE" method="POST" style="display: none;">
+        </form>
+    </div>
+</div>
+
+<!-- GSAP Animation Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<!-- Project Edit Scripts -->
+<script>
+// Character Counter for Description
+const descriptionTextarea = document.getElementById('description');
+const charCount = document.querySelector('.char-count');
+
+function updateCharCount() {
+    const length = descriptionTextarea.value.length;
+    charCount.textContent = `${length} / 2000`;
+    
+    if (length > 2000) {
+        charCount.style.color = '#dc3545';
+    } else {
+        charCount.style.color = '#3D4D55';
+    }
+}
+
+descriptionTextarea.addEventListener('input', updateCharCount);
+
+// Technology Stack Management
+const techDisplay = document.getElementById('techDisplay');
+const techInput = document.getElementById('techInput');
+const addTechBtn = document.getElementById('addTechBtn');
+const techHidden = document.getElementById('techHidden');
+
+// Add event listeners to existing remove buttons
+document.querySelectorAll('.remove-tech').forEach(btn => {
+    btn.addEventListener('click', function() {
+        this.parentElement.remove();
+        updateTechHidden();
+    });
+});
+
+function updateTechHidden() {
+    const technologies = [];
+    document.querySelectorAll('.tech-tag').forEach(tag => {
+        const techText = tag.textContent.replace('×', '').trim();
+        technologies.push(techText);
+    });
+    techHidden.value = technologies.join(',');
+}
+
+function addTechnology(techName) {
+    if (!techName.trim()) return;
+    
+    // Check if technology already exists
+    const existingTech = Array.from(document.querySelectorAll('.tech-tag')).map(tag => 
+        tag.textContent.replace('×', '').trim().toLowerCase()
+    );
+    
+    if (existingTech.includes(techName.toLowerCase())) {
+        alert('This technology is already added');
+        return;
+    }
+    
+    const techTag = document.createElement('span');
+    techTag.className = 'tech-tag';
+    techTag.innerHTML = `${techName}<button type="button" class="remove-tech">&times;</button>`;
+    
+    techDisplay.appendChild(techTag);
+    
+    const removeBtn = techTag.querySelector('.remove-tech');
+    removeBtn.addEventListener('click', () => {
+        techTag.remove();
+        updateTechHidden();
+    });
+    
+    updateTechHidden();
+}
+
+addTechBtn.addEventListener('click', () => {
+    addTechnology(techInput.value);
+    techInput.value = '';
+    techInput.focus();
+});
+
+techInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        addTechnology(techInput.value);
+        techInput.value = '';
+    }
+});
+
+// Quick Add Technology Buttons
+document.querySelectorAll('.quick-tech-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const tech = btn.getAttribute('data-tech');
+        addTechnology(tech);
+    });
+});
+
+// Skills Management
+const skillsDisplay = document.getElementById('skillsDisplay');
+const skillInput = document.getElementById('skillInput');
+const addSkillBtn = document.getElementById('addSkillBtn');
+const skillsHidden = document.getElementById('skillsHidden');
+
+// Add event listeners to existing remove buttons
+document.querySelectorAll('.remove-skill').forEach(btn => {
+    btn.addEventListener('click', function() {
+        this.parentElement.remove();
+        updateSkillsHidden();
+    });
+});
+
+function updateSkillsHidden() {
+    const skills = [];
+    document.querySelectorAll('.skill-tag').forEach(tag => {
+        const skillText = tag.textContent.replace('×', '').trim();
+        skills.push(skillText);
+    });
+    skillsHidden.value = skills.join(',');
+}
+
+function addSkill(skillName) {
+    if (!skillName.trim()) return;
+    
+    const existingSkills = Array.from(document.querySelectorAll('.skill-tag')).map(tag => 
+        tag.textContent.replace('×', '').trim().toLowerCase()
+    );
+    
+    if (existingSkills.includes(skillName.toLowerCase())) {
+        alert('This skill is already added');
+        return;
+    }
+    
+    const skillTag = document.createElement('span');
+    skillTag.className = 'skill-tag';
+    skillTag.innerHTML = `${skillName}<button type="button" class="remove-skill">&times;</button>`;
+    
+    skillsDisplay.appendChild(skillTag);
+    
+    const removeBtn = skillTag.querySelector('.remove-skill');
+    removeBtn.addEventListener('click', () => {
+        skillTag.remove();
+        updateSkillsHidden();
+    });
+    
+    updateSkillsHidden();
+}
+
+addSkillBtn.addEventListener('click', () => {
+    addSkill(skillInput.value);
+    skillInput.value = '';
+    skillInput.focus();
+});
+
+skillInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        addSkill(skillInput.value);
+        skillInput.value = '';
+    }
+});
+
+// Quick Add Skill Buttons
+document.querySelectorAll('.quick-skill-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const skill = btn.getAttribute('data-skill');
+        addSkill(skill);
+    });
+});
+
+// Task Management
+let taskCounter = <%= project.tasks ? project.tasks.length : 0 %>;
+
+function updateTasksHidden() {
+    const tasks = [];
+    document.querySelectorAll('.task-edit-item').forEach(item => {
+        const title = item.querySelector('.task-title-input').value;
+        const description = item.querySelector('.task-desc-input').value;
+        const priority = item.querySelector('.task-priority-input').value;
+        const status = item.querySelector('.task-status-input').value;
+        const dueDate = item.querySelector('.task-date-input').value;
+        
+        if(title.trim()) {
+            tasks.push({
+                title: title.trim(),
+                description: description.trim(),
+                priority: priority,
+                status: status,
+                dueDate: dueDate || null
+            });
+        }
+    });
+    document.getElementById('tasksHidden').value = JSON.stringify(tasks);
+}
+
+function removeTask(index) {
+    if(confirm('Are you sure you want to delete this task?')) {
+        const taskItem = document.querySelector(`[data-task-index="${index}"]`);
+        if(taskItem) {
+            taskItem.remove();
+            updateTasksHidden();
+        }
+    }
+}
+
+function addNewTask() {
+    const tasksList = document.getElementById('tasksList');
+    const newTask = document.createElement('div');
+    newTask.className = 'task-edit-item';
+    newTask.setAttribute('data-task-index', taskCounter);
+    
+    newTask.innerHTML = `
+        <div class="task-edit-header">
+            <input type="text" class="task-title-input" placeholder="Task title" required>
+            <button type="button" class="btn-icon btn-danger" onclick="removeTask(${taskCounter})">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        <textarea class="task-desc-input" placeholder="Task description"></textarea>
+        <div class="task-meta-inputs">
+            <select class="task-priority-input">
+                <option value="low">Low Priority</option>
+                <option value="medium" selected>Medium Priority</option>
+                <option value="high">High Priority</option>
+            </select>
+            <select class="task-status-input">
+                <option value="todo" selected>To Do</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+            </select>
+            <input type="date" class="task-date-input" placeholder="Due date">
+        </div>
+    `;
+    
+    tasksList.appendChild(newTask);
+    taskCounter++;
+    
+    // Add event listeners
+    newTask.querySelectorAll('input, textarea, select').forEach(input => {
+        input.addEventListener('change', updateTasksHidden);
+    });
+    
+    updateTasksHidden();
+}
+
+document.getElementById('addTaskBtn').addEventListener('click', addNewTask);
+
+// Add change listeners to existing tasks
+document.querySelectorAll('.task-edit-item input, .task-edit-item textarea, .task-edit-item select').forEach(input => {
+    input.addEventListener('change', updateTasksHidden);
+});
+
+// Initialize tasks hidden field
+updateTasksHidden();
+
+
+// Form Validation
+const projectForm = document.getElementById('projectForm');
+projectForm.addEventListener('submit', (e) => {
+    // Validate required fields
+    const title = document.getElementById('title').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const teamSize = document.getElementById('teamSize').value;
+    const duration = document.getElementById('duration').value.trim();
+    
+    if (!title || !description || !teamSize || !duration) {
+        e.preventDefault();
+        alert('Please fill in all required fields');
+        return false;
+    }
+    
+    // Validate description length
+    if (description.length < 50) {
+        e.preventDefault();
+        alert('Description must be at least 50 characters');
+        return false;
+    }
+    
+    if (description.length > 2000) {
+        e.preventDefault();
+        alert('Description must be 2000 characters or less');
+        return false;
+    }
+    
+    // Check if at least one technology is added
+    const techs = Array.from(document.querySelectorAll('.tech-tag'));
+    if (techs.length === 0) {
+        e.preventDefault();
+        alert('Please add at least one technology');
+        return false;
+    }
+    
+    // Check if at least one skill is added
+    const skills = Array.from(document.querySelectorAll('.skill-tag'));
+    if (skills.length === 0) {
+        e.preventDefault();
+        alert('Please add at least one required skill or role');
+        return false;
+    }
+    
+    // Disable submit button to prevent double submission
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    
+    return true;
+});
+
+// Delete Project
+const deleteBtn = document.getElementById('deleteBtn');
+const deleteForm = document.getElementById('deleteForm');
+
+deleteBtn.addEventListener('click', () => {
+    if (confirm('Are you sure you want to delete this project? This action cannot be undone!')) {
+        if (confirm('This will permanently delete all project data, tasks, and history. Are you absolutely sure?')) {
+            deleteForm.submit();
+        }
+    }
+});
+
+// Unsaved Changes Warning
+let formChanged = false;
+
+projectForm.addEventListener('input', () => {
+    formChanged = true;
+});
+
+window.addEventListener('beforeunload', (e) => {
+    if (formChanged) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
+
+projectForm.addEventListener('submit', () => {
+    formChanged = false;
+});
+
+// GSAP Animations
+gsap.from('.page-header', {
+    opacity: 0,
+    y: -30,
+    duration: 0.6,
+    ease: 'power3.out'
+});
+
+gsap.from('.form-card', {
+    opacity: 0,
+    y: 30,
+    duration: 0.5,
+    stagger: 0.1,
+    delay: 0.2,
+    ease: 'power2.out'
+});
+</script>
+
+<style>
+.btn-danger {
+    width: 100%;
+    background-color: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background-color: #dc2626;
+    transform: translateY(-2px);
+}
+
+/* Task Management Styles */
+.tasks-wrapper {
+    margin-top: 1rem;
+}
+
+#tasksList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.task-edit-item {
+    background: var(--background);
+    padding: 1.25rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--tertiary-color);
+}
+
+.task-edit-header {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.task-title-input {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.task-desc-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    min-height: 60px;
+    margin-bottom: 0.75rem;
+    resize: vertical;
+}
+
+.task-meta-inputs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+}
+
+.task-priority-input,
+.task-status-input,
+.task-date-input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+}
+
+.btn-icon {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    background: transparent;
+}
+
+.btn-icon.btn-danger {
+    color: #ef4444;
+    width: auto;
+    background: transparent;
+}
+
+.btn-icon.btn-danger:hover {
+    background: #fee2e2;
+    transform: scale(1.1);
+}
+</style>

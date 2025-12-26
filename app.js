@@ -72,6 +72,12 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
     let { statusCode = 500, message = "something went wrong" } = err;
+    console.error('❌ Error occurred:', {
+        statusCode,
+        message: err.message,
+        stack: err.stack,
+        url: req.originalUrl
+    });
     res.status(statusCode).render("main/404.ejs");
 });
 

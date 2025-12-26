@@ -66,7 +66,7 @@ function updateSkillsHidden() {
         const skillText = tag.textContent.replace('×', '').trim();
         skills.push(skillText);
     });
-    skillsHidden.value = JSON.stringify(skills);
+    skillsHidden.value = skills.join(',');
 }
 
 function addSkill(skillName) {
@@ -129,6 +129,16 @@ cancelBtn.addEventListener('click', () => {
     }
 });
 
+// Save button handler - ensure form submits as POST
+const saveBtn = document.querySelector('button[type="submit"][form="profileForm"]');
+if (saveBtn) {
+    saveBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        updateSkillsHidden();
+        profileForm.submit();
+    });
+}
+
 // Delete Account
 const deleteAccountBtn = document.getElementById('deleteAccountBtn');
 deleteAccountBtn.addEventListener('click', () => {
@@ -142,34 +152,28 @@ deleteAccountBtn.addEventListener('click', () => {
 // Form Validation
 const profileForm = document.getElementById('profileForm');
 profileForm.addEventListener('submit', (e) => {
-    e.preventDefault();
+    // Update skills hidden field before submitting
+    updateSkillsHidden();
     
     // Validate required fields
     const fullName = document.getElementById('fullName').value.trim();
-    const username = document.getElementById('username').value.trim();
-    const email = document.getElementById('email').value.trim();
     
-    if (!fullName || !username || !email) {
-        alert('Please fill in all required fields');
-        return;
-    }
-    
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        alert('Please enter a valid email address');
-        return;
+    if (!fullName) {
+        e.preventDefault();
+        alert('Full name is required');
+        return false;
     }
     
     // Validate bio length
     if (bioTextarea.value.length > 500) {
+        e.preventDefault();
         alert('Bio must be 500 characters or less');
-        return;
+        return false;
     }
     
-    // Show success message (in production, this would submit the form)
-    alert('Profile updated successfully!');
-    // profileForm.submit(); // Uncomment for actual submission
+    // Allow form to submit normally
+    formChanged = false;
+    return true;
 });
 
 // Unsaved Changes Warning

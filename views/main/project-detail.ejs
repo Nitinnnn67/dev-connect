@@ -19,26 +19,53 @@
                         <i class="fas fa-rocket"></i>
                     </div>
                     <div>
-                        <h1>DevConnect Platform</h1>
-                        <p class="project-tagline">Connect developers and build amazing projects together</p>
-                    </div>
+                        <h1><%= project.title %></h1>
+                        <% if(project.description) { %>
+                            <p class="project-tagline"><%= project.description.substring(0, 100) %><%= project.description.length > 100 ? '...' : '' %></p>
+                        <% } %>
                 </div>
 
                 <div class="project-badges">
-                    <span class="status-badge status-active">Active</span>
-                    <span class="category-badge">Web Development</span>
+                    <% 
+                        let statusClass = 'status-' + project.status;
+                        let statusText = project.status === 'in-progress' ? 'In Progress' : 
+                                        project.status.charAt(0).toUpperCase() + project.status.slice(1);
+                    %>
+                    <span class="status-badge <%= statusClass %>"><%= statusText %></span>
+                    <% if(project.techStack && project.techStack.length > 0) { %>
+                        <span class="category-badge"><%= project.techStack[0] %></span>
+                    <% } %>
                 </div>
 
                 <div class="project-actions">
-                    <button class="btn btn-primary" id="joinProjectBtn">
-                        <i class="fas fa-user-plus"></i>
-                        Join Project
-                    </button>
-                    <button class="btn btn-secondary">
-                        <i class="fas fa-star"></i>
-                        Star (24)
-                    </button>
-                    <button class="btn btn-secondary">
+                    <% if(currentUser) { 
+                        const isMember = project.members && project.members.length > 0 && 
+                            project.members.some(member => 
+                                member && member._id && member._id.toString() === currentUser._id.toString()
+                            );
+                        const isOwner = project.createdBy && 
+                            (project.createdBy._id ? project.createdBy._id.toString() : project.createdBy.toString()) === currentUser._id.toString();
+                    %>
+                        
+                        <% if(!isOwner && !isMember) { %>
+                            <button class="btn btn-primary" id="joinProjectBtn" data-project-id="<%= project._id %>">
+                                <i class="fas fa-user-plus"></i>
+                                Join Project
+                            </button>
+                        <% } else if(isMember && !isOwner) { %>
+                            <button class="btn btn-secondary" disabled>
+                                <i class="fas fa-check"></i>
+                                Member
+                            </button>
+                        <% } %>
+                    <% } else { %>
+                        <!-- Not logged in -->
+                        <a href="/login" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Login to Join
+                        </a>
+                    <% } %>
+                    <button class="btn btn-secondary" id="shareBtn">
                         <i class="fas fa-share-alt"></i>
                         Share
                     </button>
@@ -53,28 +80,37 @@
             <i class="fas fa-users"></i>
             <div>
                 <span class="info-label">Team Size</span>
-                <span class="info-value">3/5 Members</span>
+                <span class="info-value"><%= (project.members && project.members.length) || 0 %>/<%= project.teamSize || 'Open' %> Members</span>
             </div>
         </div>
         <div class="info-item">
             <i class="fas fa-calendar"></i>
             <div>
                 <span class="info-label">Duration</span>
-                <span class="info-value">3 months</span>
+                <span class="info-value"><%= project.duration || 'Not specified' %></span>
             </div>
         </div>
         <div class="info-item">
             <i class="fas fa-signal"></i>
             <div>
-                <span class="info-label">Difficulty</span>
-                <span class="info-value">Intermediate</span>
+                <span class="info-label">Status</span>
+                <% 
+                    let statusDisplay = project.status === 'in-progress' ? 'In Progress' : 
+                                    project.status.charAt(0).toUpperCase() + project.status.slice(1);
+                %>
+                <span class="info-value"><%= statusDisplay %></span>
             </div>
         </div>
         <div class="info-item">
             <i class="fas fa-chart-line"></i>
             <div>
                 <span class="info-label">Progress</span>
-                <span class="info-value">65%</span>
+                <% 
+                    let totalTasks = project.tasks ? project.tasks.length : 0;
+                    let completedTasks = project.tasks ? project.tasks.filter(t => t.status === 'completed').length : 0;
+                    let progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                %>
+                <span class="info-value"><%= progress %>%</span>
             </div>
         </div>
     </section>
@@ -86,90 +122,146 @@
             <!-- Description -->
             <div class="content-card">
                 <h2><i class="fas fa-info-circle"></i> About This Project</h2>
-                <p>DevConnect is a collaborative platform designed to bring developers together to work on exciting projects. Whether you're looking to build your portfolio, learn new technologies, or contribute to meaningful work, DevConnect makes it easy to find the right team and project.</p>
-                <p>Our platform features real-time collaboration tools, project management capabilities, and a vibrant community of developers from around the world. Join us in building something amazing!</p>
+                <p><%= project.description %></p>
             </div>
 
             <!-- Technology Stack -->
+            <% if(project.techStack && project.techStack.length > 0) { %>
             <div class="content-card">
                 <h2><i class="fas fa-code"></i> Technology Stack</h2>
                 <div class="tech-stack">
-                    <span class="tech-tag">JavaScript</span>
-                    <span class="tech-tag">React</span>
-                    <span class="tech-tag">Node.js</span>
-                    <span class="tech-tag">Express</span>
-                    <span class="tech-tag">MongoDB</span>
-                    <span class="tech-tag">Socket.io</span>
-                    <span class="tech-tag">JWT</span>
-                    <span class="tech-tag">GSAP</span>
+                    <% project.techStack.forEach(tech => { %>
+                        <span class="tech-tag"><%= tech %></span>
+                    <% }); %>
                 </div>
             </div>
+            <% } %>
 
-            <!-- Project Goals -->
+            <!-- Required Skills -->
+            <% if(project.requiredSkills && project.requiredSkills.length > 0) { %>
             <div class="content-card">
-                <h2><i class="fas fa-bullseye"></i> Project Goals</h2>
-                <ul class="goals-list">
-                    <li>Create a user-friendly platform for developer collaboration</li>
-                    <li>Implement real-time chat and notification system</li>
-                    <li>Build comprehensive project management tools</li>
-                    <li>Develop skill-based project recommendations</li>
-                    <li>Launch beta version within 3 months</li>
-                </ul>
+                <h2><i class="fas fa-bullseye"></i> Required Skills</h2>
+                <div class="tech-stack">
+                    <% project.requiredSkills.forEach(skill => { %>
+                        <span class="tech-tag"><%= skill %></span>
+                    <% }); %>
+                </div>
             </div>
+            <% } %>
+
+            <!-- Tasks -->
+            <% if(project.tasks && project.tasks.length > 0) { %>
+            <div class="content-card">
+                <div class="tasks-header">
+                    <h2><i class="fas fa-tasks"></i> Project Tasks</h2>
+                    <% 
+                        let totalTasks = project.tasks.length;
+                        let completedTasks = project.tasks.filter(t => t.status === 'completed').length;
+                        let progressPercent = Math.round((completedTasks / totalTasks) * 100);
+                    %>
+                    <div class="tasks-summary">
+                        <span class="tasks-count"><%= completedTasks %>/<%= totalTasks %> completed</span>
+                        <span class="tasks-percent"><%= progressPercent %>%</span>
+                    </div>
+                </div>
+                
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: <%= progressPercent %>%"></div>
+                </div>
+                
+                <!-- Filter Tabs -->
+                <div class="task-filters">
+                    <button class="filter-btn active" data-filter="all">All (<%= totalTasks %>)</button>
+                    <button class="filter-btn" data-filter="todo">To Do (<%= project.tasks.filter(t => t.status === 'todo').length %>)</button>
+                    <button class="filter-btn" data-filter="in-progress">In Progress (<%= project.tasks.filter(t => t.status === 'in-progress').length %>)</button>
+                    <button class="filter-btn" data-filter="completed">Completed (<%= completedTasks %>)</button>
+                </div>
+                
+                <div class="tasks-list">
+                    <% project.tasks.forEach((task, index) => { %>
+                        <div class="task-item task-<%= task.status %> task-priority-<%= task.priority %>" data-status="<%= task.status %>">
+                            <div class="task-checkbox">
+                                <% if(task.status === 'completed') { %>
+                                    <i class="fas fa-check-circle"></i>
+                                <% } else if(task.status === 'in-progress') { %>
+                                    <i class="fas fa-spinner"></i>
+                                <% } else { %>
+                                    <i class="far fa-circle"></i>
+                                <% } %>
+                            </div>
+                            <div class="task-content">
+                                <div class="task-header">
+                                    <h4><%= task.title %></h4>
+                                    <div class="task-badges">
+                                        <span class="task-priority priority-<%= task.priority %>">
+                                            <i class="fas fa-flag"></i> <%= task.priority.charAt(0).toUpperCase() + task.priority.slice(1) %>
+                                        </span>
+                                        <span class="task-status <%= task.status %>">
+                                            <%= task.status === 'in-progress' ? 'In Progress' : 
+                                                task.status.charAt(0).toUpperCase() + task.status.slice(1) %>
+                                        </span>
+                                    </div>
+                                </div>
+                                <% if(task.description) { %>
+                                    <p class="task-description"><%= task.description %></p>
+                                <% } %>
+                                <div class="task-meta">
+                                    <% if(task.assignedTo) { %>
+                                        <span class="task-assignee">
+                                            <i class="fas fa-user-circle"></i>
+                                            <strong><%= task.assignedTo.name || 'Unassigned' %></strong>
+                                        </span>
+                                    <% } else { %>
+                                        <span class="task-assignee unassigned">
+                                            <i class="fas fa-user-circle"></i>
+                                            <strong>Unassigned</strong>
+                                        </span>
+                                    <% } %>
+                                    <% if(task.dueDate) { %>
+                                        <% 
+                                            let dueDate = new Date(task.dueDate);
+                                            let today = new Date();
+                                            let isOverdue = dueDate < today && task.status !== 'completed';
+                                            let daysUntil = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+                                        %>
+                                        <span class="task-due <%= isOverdue ? 'overdue' : '' %>">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <%= dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                                            <% if(isOverdue) { %>
+                                                <span class="overdue-label">(Overdue)</span>
+                                            <% } else if(daysUntil >= 0 && daysUntil <= 3 && task.status !== 'completed') { %>
+                                                <span class="due-soon-label">(Due soon)</span>
+                                            <% } %>
+                                        </span>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+            <% } %>
 
             <!-- Team Members -->
             <div class="content-card">
-                <h2><i class="fas fa-users"></i> Team Members</h2>
+                <h2><i class="fas fa-users"></i> Team Members (<%= (project.members && project.members.length) || 0 %>)</h2>
                 <div class="team-grid">
-                    <div class="team-member-card">
-                        <img src="https://ui-avatars.com/api/?name=John+Doe&size=80&background=11293A&color=fff" alt="John Doe">
-                        <h3>John Doe</h3>
-                        <p class="role">Project Lead</p>
-                        <p class="skills">Full Stack • React • Node.js</p>
-                        <a href="/users/1" class="view-profile">View Profile</a>
-                    </div>
-                    <div class="team-member-card">
-                        <img src="https://ui-avatars.com/api/?name=Sarah+Smith&size=80&background=B58863&color=fff" alt="Sarah Smith">
-                        <h3>Sarah Smith</h3>
-                        <p class="role">UI/UX Designer</p>
-                        <p class="skills">Figma • Design Systems</p>
-                        <a href="/users/2" class="view-profile">View Profile</a>
-                    </div>
-                    <div class="team-member-card">
-                        <img src="https://ui-avatars.com/api/?name=Mike+Johnson&size=80&background=3D4D55&color=fff" alt="Mike Johnson">
-                        <h3>Mike Johnson</h3>
-                        <p class="role">Backend Developer</p>
-                        <p class="skills">Node.js • MongoDB • AWS</p>
-                        <a href="/users/3" class="view-profile">View Profile</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Project Links -->
-            <div class="content-card">
-                <h2><i class="fas fa-link"></i> Links & Resources</h2>
-                <div class="links-grid">
-                    <a href="#" class="link-card">
-                        <i class="fab fa-github"></i>
-                        <div>
-                            <h4>GitHub Repository</h4>
-                            <p>github.com/devconnect/platform</p>
-                        </div>
-                    </a>
-                    <a href="#" class="link-card">
-                        <i class="fas fa-globe"></i>
-                        <div>
-                            <h4>Live Demo</h4>
-                            <p>devconnect-demo.com</p>
-                        </div>
-                    </a>
-                    <a href="#" class="link-card">
-                        <i class="fas fa-file-alt"></i>
-                        <div>
-                            <h4>Documentation</h4>
-                            <p>docs.devconnect.com</p>
-                        </div>
-                    </a>
+                    <% if(project.members && project.members.length > 0) { %>
+                        <% project.members.forEach(member => { %>
+                            <div class="team-member-card">
+                                <img src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(member.name || 'User') %>&size=80&background=random&color=fff" 
+                                     alt="<%= member.name || 'User' %>">
+                                <h3><%= member.name || 'Unknown' %></h3>
+                                <p class="username">@<%= member.username || 'user' %></p>
+                                <% if(member.skills && member.skills.length > 0) { %>
+                                    <p class="skills"><%= member.skills.slice(0, 3).join(' • ') %></p>
+                                <% } %>
+                                <a href="/users/<%= member.username || member._id %>" class="view-profile">View Profile</a>
+                            </div>
+                        <% }); %>
+                    <% } else { %>
+                        <p>No team members yet.</p>
+                    <% } %>
                 </div>
             </div>
         </div>
@@ -177,36 +269,35 @@
         <!-- Sidebar -->
         <aside class="content-sidebar">
             <!-- Project Owner -->
+            <% if(project.createdBy) { %>
             <div class="sidebar-card">
                 <h3>Project Owner</h3>
                 <div class="owner-info">
-                    <img src="https://ui-avatars.com/api/?name=John+Doe&size=60&background=11293A&color=fff" alt="John Doe">
+                    <img src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(project.createdBy.name || 'User') %>&size=60&background=11293A&color=fff" 
+                         alt="<%= project.createdBy.name || 'User' %>">
                     <div>
-                        <h4>John Doe</h4>
-                        <p>Full Stack Developer</p>
-                        <a href="/users/1">View Profile</a>
+                        <h4><%= project.createdBy.name || 'Unknown' %></h4>
+                        <p>@<%= project.createdBy.username || 'user' %></p>
+                        <a href="/users/<%= project.createdBy.username || project.createdBy._id %>">View Profile</a>
                     </div>
                 </div>
             </div>
+            <% } %>
 
             <!-- Required Skills -->
+            <% if(project.requiredSkills && project.requiredSkills.length > 0) { %>
             <div class="sidebar-card">
                 <h3>Looking For</h3>
                 <div class="required-skills">
-                    <div class="skill-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>Frontend Developer</span>
-                    </div>
-                    <div class="skill-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>DevOps Engineer</span>
-                    </div>
-                    <div class="skill-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>UI/UX Designer</span>
-                    </div>
+                    <% project.requiredSkills.forEach(skill => { %>
+                        <div class="skill-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span><%= skill %></span>
+                        </div>
+                    <% }); %>
                 </div>
             </div>
+            <% } %>
 
             <!-- Project Stats -->
             <div class="sidebar-card">
@@ -214,41 +305,69 @@
                 <div class="stats-list">
                     <div class="stat-item">
                         <span class="stat-label">Created</span>
-                        <span class="stat-value">Nov 15, 2025</span>
+                        <span class="stat-value"><%= new Date(project.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %></span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Last Updated</span>
-                        <span class="stat-value">2 hours ago</span>
+                        <% 
+                            const now = new Date();
+                            const created = new Date(project.createdAt);
+                            const diffTime = Math.abs(now - created);
+                            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                            const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+                            let timeAgo = '';
+                            if(diffDays > 0) {
+                                timeAgo = diffDays + ' day' + (diffDays > 1 ? 's' : '') + ' ago';
+                            } else if(diffHours > 0) {
+                                timeAgo = diffHours + ' hour' + (diffHours > 1 ? 's' : '') + ' ago';
+                            } else {
+                                timeAgo = 'Just now';
+                            }
+                        %>
+                        <span class="stat-value"><%= timeAgo %></span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Total Tasks</span>
-                        <span class="stat-value">18</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Completed</span>
-                        <span class="stat-value">10</span>
-                    </div>
+                    <% if(project.tasks) { %>
+                        <div class="stat-item">
+                            <span class="stat-label">Total Tasks</span>
+                            <span class="stat-value"><%= project.tasks.length %></span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Completed</span>
+                            <span class="stat-value"><%= project.tasks.filter(t => t.status === 'completed').length %></span>
+                        </div>
+                    <% } %>
                 </div>
             </div>
 
             <!-- Quick Actions -->
+            <% if(currentUser) { 
+                const isMemberCheck = project.members && project.members.length > 0 && 
+                    project.members.some(member => member && member._id && member._id.toString() === currentUser._id.toString());
+                const isOwnerCheck = project.createdBy && project.createdBy._id && 
+                    project.createdBy._id.toString() === currentUser._id.toString();
+            %>
             <div class="sidebar-card">
                 <h3>Quick Actions</h3>
                 <div class="quick-actions">
-                    <a href="/projects/1/dashboard" class="action-link">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span>View Dashboard</span>
-                    </a>
-                    <a href="/projects/1/chat" class="action-link">
-                        <i class="fas fa-comments"></i>
-                        <span>Team Chat</span>
-                    </a>
-                    <a href="/projects/1/edit" class="action-link">
-                        <i class="fas fa-edit"></i>
-                        <span>Edit Project</span>
-                    </a>
+                    <% if(isMemberCheck) { %>
+                        <a href="/projects/<%= project._id %>/dashboard" class="action-link">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>View Dashboard</span>
+                        </a>
+                        <a href="#" class="action-link">
+                            <i class="fas fa-comments"></i>
+                            <span>Team Chat</span>
+                        </a>
+                    <% } %>
+                    <% if(isOwnerCheck) { %>
+                        <a href="/projects/<%= project._id %>/edit" class="action-link">
+                            <i class="fas fa-edit"></i>
+                            <span>Edit Project</span>
+                        </a>
+                    <% } %>
                 </div>
             </div>
+            <% } %>
         </aside>
     </div>
 </div>
@@ -259,14 +378,112 @@
 
 <script>
 // Join Project Button
-document.getElementById('joinProjectBtn').addEventListener('click', function() {
-    if(confirm('Do you want to join this project?')) {
-        // In production, send POST request to /projects/1/join
-        alert('Join request sent! Project owner will review your request.');
-        this.innerHTML = '<i class="fas fa-check"></i> Request Sent';
-        this.disabled = true;
-    }
-});
+const joinProjectBtn = document.getElementById('joinProjectBtn');
+if(joinProjectBtn) {
+    joinProjectBtn.addEventListener('click', async function() {
+        const projectId = this.dataset.projectId;
+        
+        if(confirm('Do you want to join this project?')) {
+            try {
+                const response = await fetch(`/projects/${projectId}/join`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if(response.ok) {
+                    this.innerHTML = '<i class="fas fa-check"></i> Request Sent';
+                    this.disabled = true;
+                    this.classList.remove('btn-primary');
+                    this.classList.add('btn-secondary');
+                    
+                    // Show success message
+                    alert('Join request sent! Project owner will review your request.');
+                } else {
+                    const data = await response.json();
+                    alert(data.message || 'Failed to join project. Please try again.');
+                }
+            } catch(error) {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again later.');
+            }
+        }
+    });
+}
+
+// Share Button
+const shareBtn = document.getElementById('shareBtn');
+if(shareBtn) {
+    shareBtn.addEventListener('click', async function() {
+        const url = window.location.href;
+        
+        if(navigator.share) {
+            try {
+                await navigator.share({
+                    title: document.title,
+                    url: url
+                });
+            } catch(error) {
+                if(error.name !== 'AbortError') {
+                    copyToClipboard(url);
+                }
+            }
+        } else {
+            copyToClipboard(url);
+        }
+    });
+}
+
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Link copied to clipboard!');
+    }).catch(() => {
+        prompt('Copy this link:', text);
+    });
+}
+
+// Task Filtering
+const filterBtns = document.querySelectorAll('.filter-btn');
+const taskItems = document.querySelectorAll('.task-item');
+
+if(filterBtns.length > 0) {
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            filterBtns.forEach(b => b.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            const filter = this.dataset.filter;
+            
+            taskItems.forEach(task => {
+                if(filter === 'all') {
+                    task.style.display = 'flex';
+                    gsap.fromTo(task, 
+                        { opacity: 0, y: 20 },
+                        { opacity: 1, y: 0, duration: 0.3 }
+                    );
+                } else if(task.dataset.status === filter) {
+                    task.style.display = 'flex';
+                    gsap.fromTo(task, 
+                        { opacity: 0, y: 20 },
+                        { opacity: 1, y: 0, duration: 0.3 }
+                    );
+                } else {
+                    gsap.to(task, {
+                        opacity: 0,
+                        y: -20,
+                        duration: 0.2,
+                        onComplete: () => {
+                            task.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        });
+    });
+}
 
 // GSAP Animations
 gsap.fromTo('.project-header',

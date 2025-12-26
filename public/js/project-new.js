@@ -30,7 +30,7 @@ function updateTechHidden() {
         const techText = tag.textContent.replace('×', '').trim();
         technologies.push(techText);
     });
-    techHidden.value = JSON.stringify(technologies);
+    techHidden.value = technologies.join(',');
 }
 
 function addTechnology(techName) {
@@ -95,7 +95,7 @@ function updateSkillsHidden() {
         const skillText = tag.textContent.replace('×', '').trim();
         skills.push(skillText);
     });
-    skillsHidden.value = JSON.stringify(skills);
+    skillsHidden.value = skills.join(',');
 }
 
 function addSkill(skillName) {
@@ -147,135 +147,57 @@ document.querySelectorAll('.quick-skill-btn').forEach(btn => {
     });
 });
 
-// Image Upload
-const projectImage = document.getElementById('projectImage');
-const imagePreview = document.getElementById('imagePreview');
-const uploadImageBtn = document.getElementById('uploadImageBtn');
-
-uploadImageBtn.addEventListener('click', () => {
-    projectImage.click();
-});
-
-imagePreview.addEventListener('click', () => {
-    projectImage.click();
-});
-
-projectImage.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-        if (file.size > 5 * 1024 * 1024) {
-            alert('File size must be less than 5MB');
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            imagePreview.innerHTML = `<img src="${event.target.result}" alt="Project Image">`;
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-// Save Draft
-const saveDraftBtn = document.getElementById('saveDraftBtn');
-saveDraftBtn.addEventListener('click', () => {
-    const formData = new FormData(document.getElementById('projectForm'));
-    formData.append('isDraft', 'true');
-    
-    // In production, save to localStorage or send to server
-    localStorage.setItem('projectDraft', JSON.stringify(Object.fromEntries(formData)));
-    alert('Draft saved successfully!');
-});
-
-// Load Draft on Page Load
-window.addEventListener('DOMContentLoaded', () => {
-    const draft = localStorage.getItem('projectDraft');
-    if (draft && confirm('You have a saved draft. Would you like to load it?')) {
-        const draftData = JSON.parse(draft);
-        
-        // Populate form fields
-        Object.keys(draftData).forEach(key => {
-            const field = document.querySelector(`[name="${key}"]`);
-            if (field && field.type !== 'file') {
-                if (field.type === 'checkbox') {
-                    field.checked = draftData[key] === 'on';
-                } else {
-                    field.value = draftData[key];
-                }
-            }
-        });
-        
-        // Load technologies
-        if (draftData.techStack) {
-            try {
-                const techs = JSON.parse(draftData.techStack);
-                techs.forEach(tech => addTechnology(tech));
-            } catch (e) {}
-        }
-        
-        // Load skills
-        if (draftData.requiredSkills) {
-            try {
-                const skills = JSON.parse(draftData.requiredSkills);
-                skills.forEach(skill => addSkill(skill));
-            } catch (e) {}
-        }
-        
-        updateCharCount();
-    }
-});
-
 // Form Validation
 const projectForm = document.getElementById('projectForm');
 projectForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
     // Validate required fields
-    const projectName = document.getElementById('projectName').value.trim();
-    const tagline = document.getElementById('tagline').value.trim();
+    const title = document.getElementById('title').value.trim();
     const description = document.getElementById('description').value.trim();
-    const category = document.getElementById('category').value;
     const teamSize = document.getElementById('teamSize').value;
-    const duration = document.getElementById('duration').value;
-    const status = document.getElementById('status').value;
-    const difficulty = document.getElementById('difficulty').value;
-    const goals = document.getElementById('goals').value.trim();
+    const duration = document.getElementById('duration').value.trim();
     
-    if (!projectName || !tagline || !description || !category || 
-        !teamSize || !duration || !status || !difficulty || !goals) {
+    if (!title || !description || !teamSize || !duration) {
+        e.preventDefault();
         alert('Please fill in all required fields');
-        return;
+        return false;
     }
     
     // Validate description length
+    if (description.length < 50) {
+        e.preventDefault();
+        alert('Description must be at least 50 characters');
+        return false;
+    }
+    
     if (description.length > 2000) {
+        e.preventDefault();
         alert('Description must be 2000 characters or less');
-        return;
+        return false;
     }
     
     // Check if at least one technology is added
     const techs = Array.from(document.querySelectorAll('.tech-tag'));
     if (techs.length === 0) {
+        e.preventDefault();
         alert('Please add at least one technology');
-        return;
+        return false;
     }
     
     // Check if at least one skill is added
     const skills = Array.from(document.querySelectorAll('.skill-tag'));
     if (skills.length === 0) {
+        e.preventDefault();
         alert('Please add at least one required skill or role');
-        return;
+        return false;
     }
     
-    // Clear draft from localStorage
-    localStorage.removeItem('projectDraft');
+    // Disable submit button to prevent double submission
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
     
-    // Show success message (in production, this would submit the form)
-    alert('Project created successfully!');
-    // projectForm.submit(); // Uncomment for actual submission
-    
-    // Redirect to projects page
-    // window.location.href = '/projects';
+    formChanged = false;
+    return true;
 });
 
 // Unsaved Changes Warning

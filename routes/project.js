@@ -7,30 +7,33 @@ const User = require("../models/user.js");
 
 // ==================== Project Routes ====================
 
-//------------------------------ New Project Form ------------------------------//
-router.get("/new", isLoggedin, wrapAsync(async(req, res) => {
-    res.render("main/project-new.ejs", {
-        title: "Create New Project - DevConnect"
-    });
-}));
 //------------------------------- Projects Listing ------------------------------//
-
-  router.get("/", wrapAsync(async(req, res) => {
-// TODO: Fetch all projects from database
+router.get("/", wrapAsync(async(req, res) => {
+    console.log('✓ Projects route hit!');
+    
     const projects = await Project.find({})
         .populate("createdBy", "name username")
         .populate("members", "name username")
         .sort({ createdAt: -1 });
+    
+    console.log(`Found ${projects.length} projects`);
     
     res.render("main/projects.ejs", {
         title: "Browse Projects - DevConnect",
         projects
     });
 }));
+
+//------------------------------ New Project Form ------------------------------//
+router.get("/new", isLoggedin, wrapAsync(async(req, res) => {
+    res.render("main/project-new.ejs", {
+        title: "Create New Project - DevConnect"
+    });
+}));
 //------------------------------- Create Project -------------------------------//
 
 router.post("/", isLoggedin, wrapAsync(async(req, res) => {
-    const { title, description, techStack, requiredSkills, teamSize, duration } = req.body;
+    const { title, description, techStack, requiredSkills, teamSize, duration, status } = req.body;
     const newProject = new Project({
         title,
         description,
@@ -38,6 +41,7 @@ router.post("/", isLoggedin, wrapAsync(async(req, res) => {
         requiredSkills: Array.isArray(requiredSkills) ? requiredSkills : requiredSkills.split(',').map(s => s.trim()),
         teamSize,
         duration,
+        status: status || "open",
         createdBy: req.user._id,
         members: [req.user._id]
     });

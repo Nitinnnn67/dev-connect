@@ -12,7 +12,7 @@
             <div class="profile-main">
                 <div class="avatar-wrapper">
                     <img src="<%= user.profilePicture || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.username)}&size=150&background=11293A&color=fff` %>" alt="Profile" class="profile-avatar">
-                    <% if (currentUser && currentUser._id.equals(user._id)) { %>
+                    <% if (currentUser && user && user._id && currentUser._id.toString() === user._id.toString()) { %>
                         <button class="avatar-edit-btn">
                             <i class="fas fa-camera"></i>
                         </button>
@@ -28,6 +28,15 @@
                         <% if (user.location) { %>
                             <span><i class="fas fa-map-marker-alt"></i> <%= user.location %></span>
                         <% } %>
+                        <% if (user.company) { %>
+                            <span><i class="fas fa-building"></i> <%= user.company %></span>
+                        <% } %>
+                        <% if (user.showEmail && user.email) { %>
+                            <span><i class="fas fa-envelope"></i> <%= user.email %></span>
+                        <% } %>
+                        <% if (user.phone) { %>
+                            <span><i class="fas fa-phone"></i> <%= user.phone %></span>
+                        <% } %>
                         <span><i class="fas fa-calendar-alt"></i> Joined <%= new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) %></span>
                         <% if (user.website) { %>
                             <span><i class="fas fa-link"></i> <a href="<%= user.website %>" target="_blank"><%= user.website.replace(/^https?:\/\//, '') %></a></span>
@@ -35,7 +44,7 @@
                     </div>
                 </div>
                 <div class="profile-actions">
-                    <% if (currentUser && currentUser._id.equals(user._id)) { %>
+                    <% if (currentUser && user && user._id && currentUser._id.toString() === user._id.toString()) { %>
                         <a href="/users/<%= user._id %>/edit" class="btn btn-primary">
                             <i class="fas fa-edit"></i>
                             <span>Edit Profile</span>
@@ -53,11 +62,11 @@
     <!-- Profile Stats -->
     <section class="profile-stats">
         <div class="stat-item">
-            <h3><%= stats.projectCount %></h3>
+            <h3><%= (stats && stats.projectCount) || 0 %></h3>
             <p>Projects</p>
         </div>
         <div class="stat-item">
-            <h3><%= stats.contributions %></h3>
+            <h3><%= (stats && stats.contributions) || 0 %></h3>
             <p>Contributions</p>
         </div>
         <div class="stat-item">
@@ -65,7 +74,7 @@
             <p>Skills</p>
         </div>
         <div class="stat-item">
-            <h3><%= projects.filter(p => p.createdBy._id.equals(user._id)).length %></h3>
+            <h3><%= projects && projects.length > 0 ? projects.filter(p => p.createdBy && p.createdBy._id && p.createdBy._id.toString() === user._id.toString()).length : 0 %></h3>
             <p>Created</p>
         </div>
     </section>
@@ -135,20 +144,67 @@
                     Achievements
                 </h3>
                 <div class="achievements-list">
+                    <% 
+                    const projectCount = projects && projects.length > 0 ? projects.filter(p => p.createdBy && p.createdBy._id && p.createdBy._id.toString() === user._id.toString()).length : 0;
+                    const contributionCount = stats && stats.contributions ? stats.contributions : 0;
+                    %>
+                    
+                    <% if(projectCount >= 10) { %>
                     <div class="achievement-item">
-                        <i class="fas fa-star"></i>
-                        <div>
-                            <h4>Top Contributor</h4>
-                            <p>Earned for 100+ contributions</p>
-                        </div>
-                    </div>
-                    <div class="achievement-item">
-                        <i class="fas fa-rocket"></i>
+                        <i class="fas fa-rocket" style="color: #f59e0b;"></i>
                         <div>
                             <h4>Project Pioneer</h4>
-                            <p>Created 10+ projects</p>
+                            <p>Created <%= projectCount %>+ projects</p>
                         </div>
                     </div>
+                    <% } %>
+                    
+                    <% if(contributionCount >= 50) { %>
+                    <div class="achievement-item">
+                        <i class="fas fa-star" style="color: #eab308;"></i>
+                        <div>
+                            <h4>Top Contributor</h4>
+                            <p><%= contributionCount %>+ contributions</p>
+                        </div>
+                    </div>
+                    <% } %>
+                    
+                    <% if(user.skills && user.skills.length >= 10) { %>
+                    <div class="achievement-item">
+                        <i class="fas fa-code" style="color: #8b5cf6;"></i>
+                        <div>
+                            <h4>Tech Expert</h4>
+                            <p>Mastered <%= user.skills.length %> skills</p>
+                        </div>
+                    </div>
+                    <% } %>
+                    
+                    <% if(projectCount >= 5) { %>
+                    <div class="achievement-item">
+                        <i class="fas fa-fire" style="color: #ef4444;"></i>
+                        <div>
+                            <h4>Active Builder</h4>
+                            <p>Created <%= projectCount %> projects</p>
+                        </div>
+                    </div>
+                    <% } %>
+                    
+                    <% if(new Date() - new Date(user.createdAt) > 365 * 24 * 60 * 60 * 1000) { %>
+                    <div class="achievement-item">
+                        <i class="fas fa-calendar-check" style="color: #10b981;"></i>
+                        <div>
+                            <h4>Veteran</h4>
+                            <p>Member for <%= Math.floor((new Date() - new Date(user.createdAt)) / (365 * 24 * 60 * 60 * 1000)) %> year(s)</p>
+                        </div>
+                    </div>
+                    <% } %>
+                    
+                    <% if(projectCount === 0 && contributionCount === 0 && user.skills && user.skills.length < 10) { %>
+                    <div style="text-align: center; padding: 1rem; color: #94a3b8; font-size: 0.9rem;">
+                        <i class="fas fa-trophy" style="font-size: 2rem; margin-bottom: 0.5rem; display: block;"></i>
+                        <p>No achievements yet. Start creating projects and contributing to earn badges!</p>
+                    </div>
+                    <% } %>
                 </div>
             </div>
         </aside>
@@ -178,10 +234,14 @@
                         <% projects.forEach(project => { %>
                             <div class="project-card">
                                 <div class="project-header">
-                                    <h3><%= project.title %></h3>
-                                    <span class="project-status status-<%= project.status %>"><%= project.status %></span>
+                                    <h3><%= project.title || 'Untitled Project' %></h3>
+                                    <span class="project-status status-<%= project.status || 'open' %>"><%= project.status || 'open' %></span>
                                 </div>
-                                <p class="project-description"><%= project.description.substring(0, 100) %><%= project.description.length > 100 ? '...' : '' %></p>
+                                <% if(project.description) { %>
+                                    <p class="project-description"><%= project.description.substring(0, 100) %><%= project.description.length > 100 ? '...' : '' %></p>
+                                <% } else { %>
+                                    <p class="project-description">No description available</p>
+                                <% } %>
                                 <% if (project.techStack && project.techStack.length > 0) { %>
                                     <div class="project-tech">
                                         <% project.techStack.slice(0, 3).forEach(tech => { %>
@@ -191,8 +251,8 @@
                                 <% } %>
                                 <div class="project-footer">
                                     <div class="project-stats">
-                                        <span><i class="fas fa-users"></i> <%= project.members.length %></span>
-                                        <span><i class="fas fa-tasks"></i> <%= project.tasks.length %></span>
+                                        <span><i class="fas fa-users"></i> <%= (project.members && project.members.length) || 0 %></span>
+                                        <span><i class="fas fa-tasks"></i> <%= (project.tasks && project.tasks.length) || 0 %></span>
                                     </div>
                                     <a href="/projects/<%= project._id %>" class="project-link">View Project <i class="fas fa-arrow-right"></i></a>
                                 </div>
@@ -219,17 +279,17 @@
                         <% recentProjects.forEach(project => { %>
                             <div class="activity-item">
                                 <div class="activity-icon">
-                                    <% if (project.createdBy._id.equals(user._id)) { %>
+                                    <% if (project.createdBy && project.createdBy._id && project.createdBy._id.toString() === user._id.toString()) { %>
                                         <i class="fas fa-plus"></i>
                                     <% } else { %>
                                         <i class="fas fa-user-plus"></i>
                                     <% } %>
                                 </div>
                                 <div class="activity-content">
-                                    <% if (project.createdBy._id.equals(user._id)) { %>
-                                        <p><strong>Created a new project</strong> "<a href="/projects/<%= project._id %>"><%= project.title %></a>"</p>
+                                    <% if (project.createdBy && project.createdBy._id && project.createdBy._id.toString() === user._id.toString()) { %>
+                                        <p><strong>Created a new project</strong> "<a href="/projects/<%= project._id %>"><%= project.title || 'Untitled' %></a>"</p>
                                     <% } else { %>
-                                        <p><strong>Joined project</strong> "<a href="/projects/<%= project._id %>"><%= project.title %></a>"</p>
+                                        <p><strong>Joined project</strong> "<a href="/projects/<%= project._id %>"><%= project.title || 'Untitled' %></a>"</p>
                                     <% } %>
                                     <span class="activity-time"><%= new Date(project.createdAt).toLocaleDateString() %></span>
                                 </div>
@@ -251,17 +311,21 @@
                     <div class="activity-list">
                         <% 
                         let userTasks = [];
-                        projects.forEach(project => {
-                            project.tasks.forEach(task => {
-                                if (task.assignedTo && task.assignedTo.equals(user._id)) {
-                                    userTasks.push({
-                                        task: task,
-                                        projectTitle: project.title,
-                                        projectId: project._id
+                        if(projects && projects.length > 0) {
+                            projects.forEach(project => {
+                                if(project.tasks && project.tasks.length > 0) {
+                                    project.tasks.forEach(task => {
+                                        if (task.assignedTo && task.assignedTo._id && task.assignedTo._id.toString() === user._id.toString()) {
+                                            userTasks.push({
+                                                task: task,
+                                                projectTitle: project.title || 'Untitled',
+                                                projectId: project._id
+                                            });
+                                        }
                                     });
                                 }
                             });
-                        });
+                        }
                         %>
                         <% if (userTasks.length > 0) { %>
                             <% userTasks.forEach(item => { %>

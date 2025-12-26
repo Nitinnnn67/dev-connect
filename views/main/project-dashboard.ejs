@@ -9,42 +9,73 @@
     <section class="dashboard-header">
         <div class="header-content">
             <div class="header-left">
-                <a href="/projects/1" class="back-btn">
+                <a href="/projects/<%= project._id %>" class="back-btn">
                     <i class="fas fa-arrow-left"></i>
                 </a>
                 <div class="project-info">
-                    <h1>DevConnect Platform</h1>
+                    <h1><%= project.title %></h1>
                     <div class="project-meta">
-                        <span class="status-badge status-active">Active</span>
-                        <span><i class="fas fa-users"></i> 3/5 Members</span>
-                        <span><i class="fas fa-calendar"></i> 45 days left</span>
+                        <% 
+                            let statusClass = '';
+                            let statusText = '';
+                            if (project.status === 'open') {
+                                statusClass = 'status-open';
+                                statusText = 'Open';
+                            } else if (project.status === 'in-progress') {
+                                statusClass = 'status-active';
+                                statusText = 'In Progress';
+                            } else if (project.status === 'completed') {
+                                statusClass = 'status-completed';
+                                statusText = 'Completed';
+                            } else if (project.status === 'closed') {
+                                statusClass = 'status-closed';
+                                statusText = 'Closed';
+                            }
+                        %>
+                        <span class="status-badge <%= statusClass %>"><%= statusText %></span>
+                        <span><i class="fas fa-users"></i> <%= project.members.length %><% if (project.teamSize) { %>/<%= project.teamSize %><% } %> Members</span>
+                        <% if (project.duration) { %>
+                            <span><i class="fas fa-calendar"></i> <%= project.duration %></span>
+                        <% } %>
                     </div>
                 </div>
             </div>
             <div class="header-actions">
-                <a href="/projects/1/chat" class="btn btn-secondary">
+                <a href="/projects/<%= project._id %>/chat" class="btn btn-secondary">
                     <i class="fas fa-comments"></i>
                     Team Chat
                 </a>
-                <a href="/projects/1/edit" class="btn btn-primary">
-                    <i class="fas fa-cog"></i>
-                    Settings
-                </a>
+                <% if (project.createdBy._id.equals(currentUser._id)) { %>
+                    <a href="/projects/<%= project._id %>/edit" class="btn btn-primary">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </a>
+                <% } %>
             </div>
         </div>
     </section>
 
     <!-- Dashboard Stats -->
     <section class="dashboard-stats">
+        <% 
+            const inProgressTasks = project.tasks.filter(t => t.status === 'in-progress').length;
+            const todoTasks = project.tasks.filter(t => t.status === 'todo').length;
+            
+            // Calculate overdue tasks
+            const now = new Date();
+            const overdueTasks = project.tasks.filter(t => 
+                t.status !== 'completed' && t.dueDate && new Date(t.dueDate) < now
+            ).length;
+        %>
         <div class="stat-card">
             <div class="stat-icon" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
                 <i class="fas fa-tasks"></i>
             </div>
             <div class="stat-info">
-                <h3>18</h3>
+                <h3><%= totalTasks %></h3>
                 <p>Total Tasks</p>
             </div>
-            <span class="stat-change positive">+3 this week</span>
+            <span class="stat-change"><%= project.tasks.length === 0 ? 'No tasks yet' : 'Total' %></span>
         </div>
 
         <div class="stat-card">
@@ -52,10 +83,10 @@
                 <i class="fas fa-spinner"></i>
             </div>
             <div class="stat-info">
-                <h3>7</h3>
+                <h3><%= inProgressTasks %></h3>
                 <p>In Progress</p>
             </div>
-            <span class="stat-change">Active now</span>
+            <span class="stat-change"><%= inProgressTasks > 0 ? 'Active now' : 'None active' %></span>
         </div>
 
         <div class="stat-card">
@@ -63,10 +94,10 @@
                 <i class="fas fa-chart-line"></i>
             </div>
             <div class="stat-info">
-                <h3>65%</h3>
+                <h3><%= progress %>%</h3>
                 <p>Completion</p>
             </div>
-            <span class="stat-change positive">+12% this week</span>
+            <span class="stat-change <%= progress >= 50 ? 'positive' : '' %>"><%= completedTasks %> of <%= totalTasks %></span>
         </div>
 
         <div class="stat-card">
@@ -74,10 +105,10 @@
                 <i class="fas fa-exclamation-circle"></i>
             </div>
             <div class="stat-info">
-                <h3>2</h3>
+                <h3><%= overdueTasks %></h3>
                 <p>Overdue</p>
             </div>
-            <span class="stat-change negative">Need attention</span>
+            <span class="stat-change <%= overdueTasks > 0 ? 'negative' : '' %>"><%= overdueTasks > 0 ? 'Need attention' : 'On track' %></span>
         </div>
     </section>
 
@@ -94,33 +125,47 @@
                     </h2>
                 </div>
                 <div class="progress-overview">
+                    <% 
+                        const todoCount = project.tasks.filter(t => t.status === 'todo').length;
+                        const inProgressCount = project.tasks.filter(t => t.status === 'in-progress').length;
+                        const completedCount = project.tasks.filter(t => t.status === 'completed').length;
+                        const totalCount = project.tasks.length || 1;
+                        
+                        const completedPercent = Math.round((completedCount / totalCount) * 100);
+                        const inProgressPercent = Math.round((inProgressCount / totalCount) * 100);
+                        const todoPercent = Math.round((todoCount / totalCount) * 100);
+                        
+                        // Calculate stroke-dasharray for circular progress (circumference = 2 * PI * r = 534)
+                        const circumference = 534;
+                        const progressStroke = (progress / 100) * circumference;
+                    %>
                     <div class="progress-chart">
                         <svg viewBox="0 0 200 200" class="circular-progress">
                             <circle cx="100" cy="100" r="85" class="progress-bg"></circle>
-                            <circle cx="100" cy="100" r="85" class="progress-fill" style="stroke-dasharray: 347 534;"></circle>
-                            <text x="100" y="100" class="progress-text">65%</text>
+                            <circle cx="100" cy="100" r="85" class="progress-fill" style="stroke-dasharray: <%= progressStroke %> <%= circumference %>;"></circle>
+                            <text x="100" y="100" class="progress-text"><%= progress %>%</text>
                         </svg>
                     </div>
                     <div class="progress-details">
                         <div class="progress-item">
                             <span class="progress-label">Completed</span>
                             <div class="progress-bar-wrapper">
-                                <div class="progress-bar" style="width: 55%; background: #28a745;"></div>
-                                <span>10 tasks</span>
+                                <div class="progress-bar" style="width: <%= completedPercent %>%; background: #28a745;"></div>
+                                <span><%= completedCount %> tasks</span>
                             </div>
                         </div>
                         <div class="progress-item">
                             <span class="progress-label">In Progress</span>
                             <div class="progress-bar-wrapper">
-                                <div class="progress-bar" style="width: 35%; background: #17a2b8;"></div>
-                                <span>7 tasks</span>
+                                <div class="progress-bar" style="width: <%= inProgressPercent %>%; background: #17a2b8;"></div>
+                                <span><%= inProgressCount %> tasks</span>
                             </div>
                         </div>
                         <div class="progress-item">
                             <span class="progress-label">To Do</span>
                             <div class="progress-bar-wrapper">
-                                <div class="progress-bar" style="width: 10%; background: #6c757d;"></div>
-                                <span>1 task</span>
+                                <div class="progress-bar" style="width: <%= todoPercent %>%; background: #6c757d;"></div>
+                                <span><%= todoCount %> tasks</span>
                             </div>
                         </div>
                     </div>
@@ -136,105 +181,69 @@
                     </h2>
                     <button class="btn btn-primary btn-sm" id="addTaskBtn">
                         <i class="fas fa-plus"></i>
-                        Add Task
-                    </button>
-                </div>
-
-                <!-- Task Filters -->
-                <div class="task-filters">
-                    <button class="filter-btn active" data-filter="all">All Tasks</button>
-                    <button class="filter-btn" data-filter="todo">To Do</button>
-                    <button class="filter-btn" data-filter="in-progress">In Progress</button>
-                    <button class="filter-btn" data-filter="completed">Completed</button>
-                </div>
-
-                <!-- Task List -->
-                <div class="task-list">
-                    <div class="task-item" data-status="in-progress">
-                        <div class="task-checkbox">
-                            <input type="checkbox" id="task1">
-                            <label for="task1"></label>
+                     % if (project.tasks.length === 0) { %>
+                        <div class="empty-state">
+                            <i class="fas fa-tasks"></i>
+                            <h3>No tasks yet</h3>
+                            <p>Create your first task to get started!</p>
                         </div>
-                        <div class="task-content">
-                            <h4>Implement user authentication system</h4>
-                            <p>Set up JWT authentication with refresh tokens and secure password storage</p>
-                            <div class="task-meta">
-                                <span class="task-priority priority-high">High Priority</span>
-                                <span><i class="fas fa-calendar"></i> Due: Dec 15</span>
-                                <span><i class="fas fa-user"></i> John Doe</span>
+                    <% } else { %>
+                        <% project.tasks.forEach((task, index) => { 
+                            const isOverdue = task.status !== 'completed' && task.dueDate && new Date(task.dueDate) < new Date();
+                            const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+                            const formattedDate = dueDate ? dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : null;
+                            
+                            // Calculate overdue days
+                            let overdueDays = 0;
+                            if (isOverdue && dueDate) {
+                                const diffTime = new Date() - dueDate;
+                                overdueDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            }
+                        %>
+                        <div class="task-item <%= isOverdue ? 'overdue' : '' %>" data-status="<%= task.status %>">
+                            <div class="task-checkbox">
+                                <input type="checkbox" id="task<%= index %>" <%= task.status === 'completed' ? 'checked' : '' %>>
+                                <label for="task<%= index %>"></label>
+                            </div>
+                            <div class="task-content <%= task.status === 'completed' ? 'completed' : '' %>">
+                                <h4><%= task.title %></h4>
+                                <% if (task.description) { %>
+                                    <p><%= task.description %></p>
+                                <% } %>
+                                <div class="task-meta">
+                                    <span class="task-priority priority-<%= task.priority %>"><%= task.priority.charAt(0).toUpperCase() + task.priority.slice(1) %> Priority</span>
+                                    
+                                    <% if (isOverdue) { %>
+                                        <span class="overdue-badge">
+                                            <i class="fas fa-exclamation-triangle"></i> 
+                                            Overdue by <%= overdueDays %> day<%= overdueDays !== 1 ? 's' : '' %>
+                                        </span>
+                                    <% } else if (task.status === 'completed') { %>
+                                        <span><i class="fas fa-check-circle"></i> Completed</span>
+                                    <% } else if (formattedDate) { %>
+                                        <span><i class="fas fa-calendar"></i> Due: <%= formattedDate %></span>
+                                    <% } %>
+                                    
+                                    <% if (task.assignedTo) { %>
+                                        <span><i class="fas fa-user"></i> <%= task.assignedTo.name || task.assignedTo.username %></span>
+                                    <% } else { %>
+                                        <span><i class="fas fa-user"></i> Unassigned</span>
+                                    <% } %>
+                                </div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="action-btn edit-task-btn" data-task-id="<%= task._id %>" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <form method="POST" action="/projects/<%= project._id %>/tasks/<%= task._id %>?_method=DELETE" style="display: inline;">
+                                    <button type="submit" class="action-btn" title="Delete" onclick="return confirm('Delete this task?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
                             </div>
                         </div>
-                        <div class="task-actions">
-                            <button class="action-btn" title="Edit"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn" title="Delete"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="task-item" data-status="in-progress">
-                        <div class="task-checkbox">
-                            <input type="checkbox" id="task2">
-                            <label for="task2"></label>
-                        </div>
-                        <div class="task-content">
-                            <h4>Design project dashboard UI</h4>
-                            <p>Create mockups and prototypes for the main dashboard interface</p>
-                            <div class="task-meta">
-                                <span class="task-priority priority-medium">Medium Priority</span>
-                                <span><i class="fas fa-calendar"></i> Due: Dec 12</span>
-                                <span><i class="fas fa-user"></i> Sarah Smith</span>
-                            </div>
-                        </div>
-                        <div class="task-actions">
-                            <button class="action-btn" title="Edit"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn" title="Delete"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="task-item" data-status="completed">
-                        <div class="task-checkbox">
-                            <input type="checkbox" id="task3" checked>
-                            <label for="task3"></label>
-                        </div>
-                        <div class="task-content completed">
-                            <h4>Set up project repository</h4>
-                            <p>Initialize Git repository and configure branch protection rules</p>
-                            <div class="task-meta">
-                                <span class="task-priority priority-high">High Priority</span>
-                                <span><i class="fas fa-check-circle"></i> Completed</span>
-                                <span><i class="fas fa-user"></i> Mike Johnson</span>
-                            </div>
-                        </div>
-                        <div class="task-actions">
-                            <button class="action-btn" title="Edit"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn" title="Delete"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="task-item overdue" data-status="in-progress">
-                        <div class="task-checkbox">
-                            <input type="checkbox" id="task4">
-                            <label for="task4"></label>
-                        </div>
-                        <div class="task-content">
-                            <h4>Write API documentation</h4>
-                            <p>Document all REST API endpoints with examples and response formats</p>
-                            <div class="task-meta">
-                                <span class="task-priority priority-medium">Medium Priority</span>
-                                <span class="overdue-badge"><i class="fas fa-exclamation-triangle"></i> Overdue by 3 days</span>
-                                <span><i class="fas fa-user"></i> Unassigned</span>
-                            </div>
-                        </div>
-                        <div class="task-actions">
-                            <button class="action-btn" title="Edit"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn" title="Delete"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="task-item" data-status="todo">
-                        <div class="task-checkbox">
-                            <input type="checkbox" id="task5">
-                            <label for="task5"></label>
-                        </div>
+                        <% }); %>
+                    <% } %/div>
                         <div class="task-content">
                             <h4>Implement real-time notifications</h4>
                             <p>Add WebSocket support for push notifications and live updates</p>
@@ -298,53 +307,72 @@
         <!-- Sidebar -->
         <aside class="content-sidebar">
             <!-- Team Members -->
-            <div class="content-card">
-                <div class="card-header">
-                    <h2>
-                        <i class="fas fa-users"></i>
-                        Team Members
-                    </h2>
-                    <button class="btn btn-sm btn-secondary" id="inviteBtn">
-                        <i class="fas fa-user-plus"></i>
-                    </button>
-                </div>
-                <div class="team-list">
-                    <div class="team-member">
-                        <img src="https://ui-avatars.com/api/?name=John+Doe&size=40&background=11293A&color=fff" alt="John Doe">
-                        <div class="member-info">
-                            <h4>John Doe</h4>
-                            <span>Project Lead</span>
+            <div class="content-card">17a2b8;">
+                            <i class="fas fa-info-circle"></i>
                         </div>
-                        <span class="member-status online"></span>
-                    </div>
-                    <div class="team-member">
-                        <img src="https://ui-avatars.com/api/?name=Sarah+Smith&size=40&background=B58863&color=fff" alt="Sarah Smith">
-                        <div class="member-info">
-                            <h4>Sarah Smith</h4>
-                            <span>UI/UX Designer</span>
+                        <div class="activity-content">
+                            <h4>Project Created</h4>
+                            <p><strong><%= project.createdBy.name || project.createdBy.username %></strong> created this project</p>
+                            <% 
+                                const createdDate = new Date(project.createdAt);
+                                const now = new Date();
+                                const diffTime = Math.abs(now - createdDate);
+                                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                let timeAgo = '';
+                                if (diffDays === 0) {
+                                    timeAgo = 'Today';
+                                } else if (diffDays === 1) {
+                                    timeAgo = '1 day ago';
+                                } else if (diffDays < 30) {
+                                    timeAgo = diffDays + ' days ago';
+                                } else if (diffDays < 365) {
+                                    const months = Math.floor(diffDays / 30);
+                                    timeAgo = months + ' month' + (months > 1 ? 's' : '') + ' ago';
+                                } else {
+                                    const years = Math.floor(diffDays / 365);
+                                    timeAgo = years + ' year' + (years > 1 ? 's' : '') + ' ago';
+                                }
+                            %>
+                            <span class="activity-time"><%= timeAgo %></span>
                         </div>
-                        <span class="member-status online"></span>
                     </div>
-                    <div class="team-member">
-                        <img src="https://ui-avatars.com/api/?name=Mike+Johnson&size=40&background=3D4D55&color=fff" alt="Mike Johnson">
-                        <div class="member-info">
-                            <h4>Mike Johnson</h4>
-                            <span>Backend Developer</span>
+                    <% if (project.members.length > 1) { %>
+                        <div class="activity-item">
+                            <div class="activity-icon" style="background: #28a745;">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h4>Team Members</h4>
+                                <p><strong><%= project.members.length %></strong> members are collaborating on this project</p>
+                                <span class="activity-time">Current</span>
+                            </div>
                         </div>
-                        <span class="member-status offline"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Project Milestones -->
-            <div class="content-card">
-                <div class="card-header">
-                    <h2>
-                        <i class="fas fa-flag"></i>
-                        Milestones
-                    </h2>
-                </div>
-                <div class="milestone-list">
+                    <% } %>
+                    <% if (completedTasks > 0) { %>
+                        <div class="activity-item">
+                            <div class="activity-icon" style="background: #ffc107;">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="activity-content">
+                     % project.members.forEach((member, idx) => { 
+                        const isOwner = member._id.equals(project.createdBy._id);
+                        const colors = ['11293A', 'B58863', '3D4D55', '2C5F2D', '97233F', '0E4C92', '8B4513', '2F4F4F'];
+                        const bgColor = colors[idx % colors.length];
+                        const memberName = member.name || member.username;
+                    %>
+                        <div class="team-member">
+                            <img src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(memberName) %>&size=40&background=<%= bgColor %>&color=fff" alt="<%= memberName %>">
+                            <div class="member-info">
+                                <h4><%= memberName %></h4>
+                                <span>
+                                    <%= isOwner ? 'Project Lead' : (member.skills && member.skills.length > 0 ? member.skills[0] : 'Team Member') %>
+                                </span>
+                            </div>
+                            <% if (member._id.equals(currentUser._id)) { %>
+                                <span class="member-status online"></span>
+                            <% } %>
+                        </div>
+                    <% }); %s="milestone-list">
                     <div class="milestone-item completed">
                         <div class="milestone-icon">
                             <i class="fas fa-check"></i>
@@ -362,64 +390,72 @@
                             <i class="fas fa-spinner"></i>
                         </div>
                         <div class="milestone-content">
-                            <h4>Core Features</h4>
-                            <div class="milestone-progress">
-                                <div class="milestone-bar" style="width: 65%;"></div>
-                            </div>
-                            <span>65% Complete</span>
-                        </div>
-                    </div>
-                    <div class="milestone-item">
+                            <h4>Core Features</<%= progress === 100 ? 'completed' : (progress > 0 ? 'active' : '') %>">
                         <div class="milestone-icon">
-                            <i class="fas fa-circle"></i>
+                            <i class="fas <%= progress === 100 ? 'fa-check' : (progress > 0 ? 'fa-spinner' : 'fa-circle') %>"></i>
                         </div>
                         <div class="milestone-content">
-                            <h4>Testing & QA</h4>
+                            <h4>Project Progress</h4>
                             <div class="milestone-progress">
-                                <div class="milestone-bar" style="width: 0%;"></div>
+                                <div class="milestone-bar" style="width: <%= progress %>%;"></div>
                             </div>
-                            <span>Not Started</span>
+                            <span><%= progress %>% Complete</span>
                         </div>
                     </div>
-                </div>
+                    <% 
+                        const taskProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                        const taskStatus = taskProgress === 100 ? 'completed' : (taskProgress > 0 ? 'active' : '');
+                    %>
+                    <div class="milestone-item <%= taskStatus %>">
+                        <div class="milestone-icon">
+                            <i class="fas <%= taskProgress === 100 ? 'fa-check' : (taskProgress > 0 ? 'fa-spinner' : 'fa-circle') %>"></i>
+                        </div>
+                        <div class="milestone-content">
+                            <h4>Task Completion</h4>
+                            <div class="milestone-progress">
+                                <div class="milestone-bar" style="width: <%= taskProgress %>%;"></div>
+                            </div>
+                            <span><%= completedTasks %> of <%= totalTasks %> tasks</span>
+                        </div>
+                    </div>
+                    <% 
+                        const memberProgress = project.teamSize ? Math.round((project.members.length / project.teamSize) * 100) : 100;
+                        const memberStatus = memberProgress === 100 ? 'completed' : (memberProgress > 50 ? 'active' : '');
+                    %>
+                    <div class="milestone-item <%= memberStatus %>">
+                        <div class="milestone-icon">
+                            <i class="fas <%= memberProgress === 100 ? 'fa-check' : (memberProgress > 50 ? 'fa-spinner' : 'fa-circle') %>"></i>
+                        </div>
+                        <div class="milestone-content">
+                            <h4>Team Assembly</h4>
+                            <div class="milestone-progress">
+                                <div class="milestone-bar" style="width: <%= memberProgress %>%;"></div>
+                            </div>
+              method="POST" action="/projects/<%= project._id %>/tasks">
+            <div class="form-group">
+                <label>Task Title *</label>
+                <input type="text" name="title" required placeholder="Enter task title">
             </div>
-
-            <!-- Quick Links -->
-            <div class="content-card">
-                <div class="card-header">
-                    <h2>
-                        <i class="fas fa-link"></i>
-                        Quick Links
-                    </h2>
-                </div>
-                <div class="quick-links">
-                    <a href="#" class="quick-link">
-                        <i class="fab fa-github"></i>
-                        <span>GitHub Repository</span>
-                    </a>
-                    <a href="#" class="quick-link">
-                        <i class="fas fa-file-alt"></i>
-                        <span>Documentation</span>
-                    </a>
-                    <a href="#" class="quick-link">
-                        <i class="fas fa-globe"></i>
-                        <span>Live Demo</span>
-                    </a>
-                    <a href="#" class="quick-link">
-                        <i class="fas fa-bug"></i>
-                        <span>Report Issues</span>
-                    </a>
-                </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" rows="3" placeholder="Task description..."></textarea>
             </div>
-        </aside>
-    </div>
-</div>
-
-<!-- Add Task Modal -->
-<div class="modal" id="addTaskModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Add New Task</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select name="priority">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Assign To</label>
+                    <select name="assignedTo">
+                        <option value="">Unassigned</option>
+                        <% project.members.forEach(member => { %>
+                            <option value="<%= member._id %>"><%= member.name || member.username %></option>
+                        <% }); %
             <button class="modal-close">&times;</button>
         </div>
         <form id="addTaskForm">

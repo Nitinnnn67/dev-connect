@@ -4,44 +4,49 @@
 const searchInput = document.getElementById('searchInput');
 const searchBtn = document.querySelector('.search-btn');
 const filterTabs = document.querySelectorAll('.filter-tab');
-const resultCards = document.querySelectorAll('.result-card');
-const projectsResults = document.getElementById('projectsResults');
-const usersResults = document.getElementById('usersResults');
-const noResults = document.getElementById('noResults');
 
-let currentFilter = 'all';
+// Get current filter from URL
+const urlParams = new URLSearchParams(window.location.search);
+let currentFilter = urlParams.get('filter') || 'all';
 
-// Search on button click
-searchBtn.addEventListener('click', performSearch);
-
-// Search on Enter key
-searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        performSearch();
+// Set active filter tab based on URL
+filterTabs.forEach(tab => {
+    if (tab.dataset.type === currentFilter) {
+        tab.classList.add('active');
+    } else {
+        tab.classList.remove('active');
     }
 });
 
-// Real-time search as user types
-searchInput.addEventListener('input', debounce(filterResults, 300));
+// Search on button click
+if (searchBtn) {
+    searchBtn.addEventListener('click', performSearch);
+}
+
+// Search on Enter key
+if (searchInput) {
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+}
 
 // Filter tabs
 filterTabs.forEach(tab => {
     tab.addEventListener('click', () => {
-        // Update active tab
-        filterTabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
+        const query = searchInput ? searchInput.value.trim() : '';
+        const filter = tab.dataset.type;
         
-        // Get filter type
-        currentFilter = tab.dataset.type;
-        
-        // Filter results
-        filterResults();
-        
-        // Animate filter change
-        gsap.fromTo('.result-card',
-            { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.4, stagger: 0.05, ease: 'power2.out' }
-        );
+        // Redirect with new filter
+        if (query) {
+            window.location.href = `/search?query=${encodeURIComponent(query)}&filter=${filter}`;
+        } else {
+            // Update active tab without redirect if no query
+            filterTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentFilter = filter;
+        }
     });
 });
 
@@ -50,54 +55,23 @@ function performSearch() {
     const query = searchInput.value.trim();
     
     if (query) {
-        // In production, this would make an API call
-        console.log('Searching for:', query);
-        
-        // Simulate search with animation
-        gsap.fromTo('.result-card',
-            { opacity: 0, scale: 0.95 },
-            { opacity: 1, scale: 1, duration: 0.5, stagger: 0.08, ease: 'back.out(1.2)' }
-        );
-        
-        // Update URL with query parameter (optional)
-        const url = new URL(window.location);
-        url.searchParams.set('query', query);
-        window.history.pushState({}, '', url);
+        // Redirect to search with query
+        window.location.href = `/search?query=${encodeURIComponent(query)}&filter=${currentFilter}`;
     }
 }
 
-// Filter results based on current filter and search query
-function filterResults() {
-    const query = searchInput.value.toLowerCase().trim();
-    let visibleCount = 0;
-    
-    resultCards.forEach(card => {
-        const cardType = card.dataset.type;
-        const cardText = card.textContent.toLowerCase();
-        
-        // Check if card matches filter and search query
-        const matchesFilter = currentFilter === 'all' || cardType === currentFilter;
-        const matchesSearch = !query || cardText.includes(query);
-        
-        if (matchesFilter && matchesSearch) {
-            card.style.display = 'flex';
-            visibleCount++;
-        } else {
-            card.style.display = 'none';
-        }
-    });
-    
-    // Update results sections visibility
-    const visibleProjects = document.querySelectorAll('.project-card[style="display: flex;"]').length;
-    const visibleUsers = document.querySelectorAll('.user-card[style="display: flex;"]').length;
-    
-    if (currentFilter === 'all' || currentFilter === 'projects') {
-        projectsResults.style.display = visibleProjects > 0 ? 'block' : 'none';
-    } else {
-        projectsResults.style.display = 'none';
-    }
-    
-    if (currentFilter === 'all' || currentFilter === 'users') {
+// Debounce function for performance
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
         usersResults.style.display = visibleUsers > 0 ? 'block' : 'none';
     } else {
         usersResults.style.display = 'none';

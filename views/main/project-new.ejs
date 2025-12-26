@@ -22,7 +22,7 @@
         </div>
 
         <!-- Create Form -->
-        <form id="projectForm" action="/projects" method="POST" enctype="multipart/form-data">
+        <form id="projectForm" action="/projects" method="POST">
             <div class="form-content">
                 <!-- Main Column -->
                 <div class="form-main">
@@ -34,36 +34,16 @@
                         </h2>
                         
                         <div class="form-group">
-                            <label for="projectName">Project Name *</label>
-                            <input type="text" id="projectName" name="title" placeholder="Enter your project name" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="tagline">Tagline *</label>
-                            <input type="text" id="tagline" name="tagline" placeholder="A short catchy description" required>
-                            <span class="help-text">A brief one-liner about your project</span>
+                            <label for="title">Project Title *</label>
+                            <input type="text" id="title" name="title" placeholder="Enter your project name" required minlength="3" maxlength="100">
+                            <span class="help-text">Give your project a clear, descriptive name</span>
                         </div>
 
                         <div class="form-group">
                             <label for="description">Project Description *</label>
-                            <textarea id="description" name="description" rows="6" placeholder="Describe your project in detail..." required></textarea>
+                            <textarea id="description" name="description" rows="8" placeholder="Describe your project in detail... What problem does it solve? What makes it unique? What are the main features?" required minlength="50" maxlength="2000"></textarea>
                             <span class="char-count">0 / 2000</span>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="category">Category *</label>
-                            <select id="category" name="category" required>
-                                <option value="">Select a category</option>
-                                <option value="web">Web Development</option>
-                                <option value="mobile">Mobile Development</option>
-                                <option value="ai-ml">AI/Machine Learning</option>
-                                <option value="data">Data Science</option>
-                                <option value="blockchain">Blockchain</option>
-                                <option value="iot">IoT</option>
-                                <option value="game">Game Development</option>
-                                <option value="devtools">Developer Tools</option>
-                                <option value="other">Other</option>
-                            </select>
+                            <span class="help-text">At least 50 characters - be descriptive!</span>
                         </div>
                     </div>
 
@@ -77,59 +57,26 @@
                         <div class="form-grid">
                             <div class="form-group">
                                 <label for="teamSize">Team Size *</label>
-                                <select id="teamSize" name="teamSize" required>
-                                    <option value="">Select team size</option>
-                                    <option value="2-3">2-3 members</option>
-                                    <option value="4-5">4-5 members</option>
-                                    <option value="6-10">6-10 members</option>
-                                    <option value="10+">10+ members</option>
-                                </select>
+                                <input type="number" id="teamSize" name="teamSize" placeholder="e.g., 5" required min="1" max="100">
+                                <span class="help-text">Maximum number of team members</span>
                             </div>
 
                             <div class="form-group">
                                 <label for="duration">Expected Duration *</label>
-                                <select id="duration" name="duration" required>
-                                    <option value="">Select duration</option>
-                                    <option value="1-month">1 month</option>
-                                    <option value="2-3-months">2-3 months</option>
-                                    <option value="3-6-months">3-6 months</option>
-                                    <option value="6-12-months">6-12 months</option>
-                                    <option value="long-term">Long term (1+ year)</option>
-                                </select>
+                                <input type="text" id="duration" name="duration" placeholder="e.g., 3 months" required>
+                                <span class="help-text">How long will this project take?</span>
                             </div>
 
                             <div class="form-group">
                                 <label for="status">Project Status *</label>
                                 <select id="status" name="status" required>
-                                    <option value="">Select status</option>
-                                    <option value="planning">Planning</option>
-                                    <option value="active">Active Development</option>
-                                    <option value="recruiting">Recruiting</option>
+                                    <option value="open" selected>Open - Recruiting members</option>
+                                    <option value="in-progress">In Progress - Active development</option>
+                                    <option value="completed">Completed - Project finished</option>
+                                    <option value="closed">Closed - Not accepting members</option>
                                 </select>
+                                <span class="help-text">Current status of your project</span>
                             </div>
-
-                            <div class="form-group">
-                                <label for="difficulty">Difficulty Level *</label>
-                                <select id="difficulty" name="difficulty" required>
-                                    <option value="">Select difficulty</option>
-                                    <option value="beginner">Beginner Friendly</option>
-                                    <option value="intermediate">Intermediate</option>
-                                    <option value="advanced">Advanced</option>
-                                    <option value="expert">Expert</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="repository">GitHub Repository (Optional)</label>
-                            <input type="url" id="repository" name="repository" placeholder="https://github.com/username/repo">
-                            <span class="help-text">Link to your project repository</span>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="liveDemo">Live Demo URL (Optional)</label>
-                            <input type="url" id="liveDemo" name="liveDemo" placeholder="https://yourproject.com">
-                            <span class="help-text">Link to live demo or deployed version</span>
                         </div>
                     </div>
 
@@ -137,7 +84,7 @@
                     <div class="form-card">
                         <h2 class="card-title">
                             <i class="fas fa-code"></i>
-                            Technology Stack
+                            Technology Stack *
                         </h2>
 
                         <div class="tech-input-wrapper">
@@ -151,16 +98,19 @@
                                     Add
                                 </button>
                             </div>
-                            <input type="hidden" id="techHidden" name="techStack" value="">
+                            <input type="hidden" id="techHidden" name="techStack" value="" required>
+                            <span class="help-text">Add at least one technology</span>
                             
                             <div class="quick-add-tech">
                                 <p>Quick add:</p>
                                 <button type="button" class="quick-tech-btn" data-tech="JavaScript">JavaScript</button>
+                                <button type="button" class="quick-tech-btn" data-tech="TypeScript">TypeScript</button>
                                 <button type="button" class="quick-tech-btn" data-tech="React">React</button>
                                 <button type="button" class="quick-tech-btn" data-tech="Node.js">Node.js</button>
                                 <button type="button" class="quick-tech-btn" data-tech="Python">Python</button>
                                 <button type="button" class="quick-tech-btn" data-tech="MongoDB">MongoDB</button>
                                 <button type="button" class="quick-tech-btn" data-tech="PostgreSQL">PostgreSQL</button>
+                                <button type="button" class="quick-tech-btn" data-tech="Docker">Docker</button>
                             </div>
                         </div>
                     </div>
@@ -169,7 +119,7 @@
                     <div class="form-card">
                         <h2 class="card-title">
                             <i class="fas fa-users-cog"></i>
-                            Required Skills & Roles
+                            Required Skills & Roles *
                         </h2>
 
                         <div class="skills-input-wrapper">
@@ -183,102 +133,25 @@
                                     Add
                                 </button>
                             </div>
-                            <input type="hidden" id="skillsHidden" name="requiredSkills" value="">
+                            <input type="hidden" id="skillsHidden" name="requiredSkills" value="" required>
+                            <span class="help-text">Add at least one required skill or role</span>
                             
                             <div class="quick-add-skills">
                                 <p>Common roles:</p>
                                 <button type="button" class="quick-skill-btn" data-skill="Frontend Developer">Frontend Developer</button>
                                 <button type="button" class="quick-skill-btn" data-skill="Backend Developer">Backend Developer</button>
+                                <button type="button" class="quick-skill-btn" data-skill="Full Stack Developer">Full Stack Developer</button>
                                 <button type="button" class="quick-skill-btn" data-skill="UI/UX Designer">UI/UX Designer</button>
                                 <button type="button" class="quick-skill-btn" data-skill="DevOps Engineer">DevOps Engineer</button>
+                                <button type="button" class="quick-skill-btn" data-skill="Data Scientist">Data Scientist</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Project Goals -->
-                    <div class="form-card">
-                        <h2 class="card-title">
-                            <i class="fas fa-bullseye"></i>
-                            Project Goals
-                        </h2>
-
-                        <div class="form-group">
-                            <label for="goals">What are your project goals? *</label>
-                            <textarea id="goals" name="goals" rows="4" placeholder="List your main objectives and what you want to achieve..." required></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="challenges">Expected Challenges</label>
-                            <textarea id="challenges" name="challenges" rows="3" placeholder="What challenges do you anticipate?"></textarea>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Sidebar -->
                 <aside class="form-sidebar">
-                    <!-- Project Image -->
-                    <div class="form-card">
-                        <h2 class="card-title">
-                            <i class="fas fa-image"></i>
-                            Project Image
-                        </h2>
-                        
-                        <div class="image-upload">
-                            <div class="image-preview" id="imagePreview">
-                                <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Click to upload image</p>
-                                <span>JPG, PNG or GIF (Max 5MB)</span>
-                            </div>
-                            <input type="file" id="projectImage" name="projectImage" accept="image/*" hidden>
-                            <button type="button" class="btn btn-secondary" id="uploadImageBtn">
-                                <i class="fas fa-upload"></i>
-                                Choose Image
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Project Settings -->
-                    <div class="form-card">
-                        <h2 class="card-title">
-                            <i class="fas fa-sliders-h"></i>
-                            Project Settings
-                        </h2>
-                        
-                        <div class="settings-list">
-                            <div class="setting-item">
-                                <div class="setting-info">
-                                    <h4>Public Project</h4>
-                                    <p>Anyone can view this project</p>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="isPublic" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-
-                            <div class="setting-item">
-                                <div class="setting-info">
-                                    <h4>Open for Contributions</h4>
-                                    <p>Accept collaboration requests</p>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="openForContributions" checked>
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-
-                            <div class="setting-item">
-                                <div class="setting-info">
-                                    <h4>Featured Project</h4>
-                                    <p>Show on your profile</p>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" name="featured">
-                                    <span class="toggle-slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Quick Tips -->
                     <div class="form-card tips-card">
@@ -298,15 +171,11 @@
 
                     <!-- Action Buttons -->
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary btn-large">
+                        <button type="submit" class="btn btn-primary btn-large" id="submitBtn">
                             <i class="fas fa-rocket"></i>
                             Create Project
                         </button>
-                        <button type="button" class="btn btn-secondary" id="saveDraftBtn">
-                            <i class="fas fa-save"></i>
-                            Save as Draft
-                        </button>
-                        <a href="/projects" class="btn btn-text">Cancel</a>
+                        <a href="/projects" class="btn btn-secondary">Cancel</a>
                     </div>
                 </aside>
             </div>

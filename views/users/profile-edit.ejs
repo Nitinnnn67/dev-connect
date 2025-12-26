@@ -29,7 +29,7 @@
         </div>
 
         <!-- Edit Form -->
-        <form id="profileForm" action="/users/<%= userId || '123' %>?_method=PUT" method="POST" enctype="multipart/form-data">
+        <form id="profileForm" action="/users/<%= user._id %>?_method=PUT" method="POST">
             <div class="edit-content">
                 <!-- Left Column -->
                 <div class="edit-main">
