@@ -56,6 +56,21 @@
 
                         <div class="form-grid">
                             <div class="form-group">
+                                <label for="category">Category *</label>
+                                <select id="category" name="category" required>
+                                    <option value="web" <%= project.category === 'web' ? 'selected' : '' %>>Web Development</option>
+                                    <option value="mobile" <%= project.category === 'mobile' ? 'selected' : '' %>>Mobile Apps</option>
+                                    <option value="desktop" <%= project.category === 'desktop' ? 'selected' : '' %>>Desktop Apps</option>
+                                    <option value="ai-ml" <%= project.category === 'ai-ml' ? 'selected' : '' %>>AI/ML</option>
+                                    <option value="blockchain" <%= project.category === 'blockchain' ? 'selected' : '' %>>Blockchain</option>
+                                    <option value="game" <%= project.category === 'game' ? 'selected' : '' %>>Game Development</option>
+                                    <option value="iot" <%= project.category === 'iot' ? 'selected' : '' %>>IoT</option>
+                                    <option value="other" <%= project.category === 'other' ? 'selected' : '' %>>Other</option>
+                                </select>
+                                <span class="help-text">What type of project is this?</span>
+                            </div>
+
+                            <div class="form-group">
                                 <label for="teamSize">Team Size *</label>
                                 <input type="number" id="teamSize" name="teamSize" value="<%= project.teamSize %>" placeholder="e.g., 5" required min="1" max="100">
                                 <span class="help-text">Maximum number of team members</span>
@@ -77,6 +92,13 @@
                                 </select>
                                 <span class="help-text">Current status of your project</span>
                             </div>
+                        </div>
+                        
+                        <!-- Tags Input -->
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label for="tagsInput">Project Tags</label>
+                            <input type="text" id="tagsInput" name="tags" value="<%= project.tags ? project.tags.join(', ') : '' %>" placeholder="e.g., opensource, hackathon, startup">
+                            <span class="help-text">Add tags separated by commas (e.g., opensource, web3, AI)</span>
                         </div>
                     </div>
 

@@ -1,5 +1,9 @@
 const express = require("express");
 const app = express();
+const http = require("http");
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server);
 const session = require("express-session");
 const methodOverride = require("method-override");
 const path = require("path");
@@ -56,9 +60,20 @@ app.use((req, res, next) => {
     next();
 });
 
+// Add notification count middleware
+const { addNotificationCount } = require("./utils/middleware.js");
+app.use(addNotificationCount);
+
 //---------database connection---------------------------------------------------
 
 connectDB();
+
+// Make io accessible to routes
+app.set('io', io);
+
+// ==================== Socket.io Configuration ====================
+// Initialize Socket.io handlers from separate folder
+require('./socket')(io);
 
 // ==================== Routes ====================
 app.use("/", indexRoutes);
@@ -82,8 +97,9 @@ app.use((err, req, res, next) => {
 });
 
 // ==================== Start Server ====================
-app.listen(5000, () => {
-    console.log("listening on port 5000");
+server.listen(5000, () => {
+    console.log("✓ Server listening on port 5000");
+    console.log("✓ Socket.io ready for real-time chat");
     console.log("http://localhost:5000");
 });
 

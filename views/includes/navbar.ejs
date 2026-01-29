@@ -9,13 +9,16 @@
         <ul class="navbar-menu">
             <li><a href="/home" class="nav-link">Dashboard</a></li>
             <li><a href="/projects" class="nav-link">Projects</a></li>
+            <li><a href="/projects/invitations" class="nav-link">Invitations</a></li>
             <li><a href="/search" class="nav-link">Search</a></li>
             <li><a href="/settings" class="nav-link">Settings</a></li>
         </ul>
         <div class="navbar-actions">
             <a href="/notifications" class="notification-btn" title="Notifications">
                 <i class="fas fa-bell"></i>
-                <span class="badge">0</span>
+                <% if (typeof unreadNotificationCount !== 'undefined' && unreadNotificationCount > 0) { %>
+                    <span class="badge"><%= unreadNotificationCount %></span>
+                <% } %>
             </a>
             <div class="user-menu">
                 <img src="https://ui-avatars.com/api/?name=<%= currentUser.name || currentUser.username %>&background=11293A&color=fff" alt="User" class="user-avatar">

@@ -4,6 +4,7 @@ const wrapAsync = require("../utils/wrapAsync.js");
 const { isLoggedin } = require("../utils/middleware.js");
 const User = require("../models/user.js");
 const Project = require("../models/project.js");
+const Notification = require("../models/notification.js");
 
 // ==================== Main Routes ====================
 
@@ -265,16 +266,47 @@ router.get("/search", isLoggedin, wrapAsync(async(req, res) => {
 
 // Get all notifications
 router.get("/notifications", isLoggedin, wrapAsync(async(req, res) => {
-    // TODO: Fetch user notifications from database
+    const notifications = await Notification.find({ user: req.user._id })
+        .populate("sender", "name username")
+        .populate("project", "title")
+        .sort({ createdAt: -1 })
+        .limit(50);
+    
+    const unreadCount = await Notification.getUnreadCount(req.user._id);
+    
     res.render("main/notifications.ejs", {
-        title: "Notifications - DevConnect"
+        title: "Notifications - DevConnect",
+        notifications,
+        unreadCount
     });
 }));
 
 // Mark notification as read
-router.put("/notifications/:id/read", isLoggedin, wrapAsync(async(req, res) => {
+router.post("/notifications/:id/read", isLoggedin, wrapAsync(async(req, res) => {
     const { id } = req.params;
-    // TODO: Update notification status
+    
+    const notification = await Notification.findOne({ _id: id, user: req.user._id });
+    
+    if (notification) {
+        await notification.markAsRead();
+    }
+    
+    res.redirect("/notifications");
+}));
+
+// Mark all notifications as read
+router.post("/notifications/mark-all-read", isLoggedin, wrapAsync(async(req, res) => {
+    await Notification.markAllAsRead(req.user._id);
+    req.flash("success", "All notifications marked as read!");
+    res.redirect("/notifications");
+}));
+
+// Delete notification
+router.delete("/notifications/:id", isLoggedin, wrapAsync(async(req, res) => {
+    const { id } = req.params;
+    
+    await Notification.findOneAndDelete({ _id: id, user: req.user._id });
+    
     res.json({ success: true });
 }));
 

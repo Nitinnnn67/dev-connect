@@ -4,6 +4,8 @@ const wrapAsync = require("../utils/wrapAsync.js");
 const { isLoggedin } = require("../utils/middleware.js");
 const Project = require("../models/project.js");
 const User = require("../models/user.js");
+const Message = require("../models/message.js");
+const { createNotification, createBulkNotifications, templates } = require("../utils/notificationHelper.js");
 
 // ==================== Project Routes ====================
 
@@ -11,16 +13,58 @@ const User = require("../models/user.js");
 router.get("/", wrapAsync(async(req, res) => {
     console.log('✓ Projects route hit!');
     
-    const projects = await Project.find({})
+    const { category, tag, skill, status, sortBy } = req.query;
+    
+    let query = {};
+    
+    // Apply filters if provided
+    if (category && category !== "all") {
+        query.category = category;
+    }
+    
+    if (tag) {
+        query.tags = tag;
+    }
+    
+    if (skill) {
+        query.requiredSkills = skill;
+    }
+    
+    if (status && status !== "all") {
+        query.status = status;
+    }
+    
+    let sortOptions = { createdAt: -1 }; // Default: newest first
+    
+    if (sortBy === "popularity") {
+        sortOptions = { "analytics.popularity": -1 };
+    } else if (sortBy === "views") {
+        sortOptions = { "analytics.views": -1 };
+    } else if (sortBy === "members") {
+        // Sort by array length requires aggregation, but for simplicity we'll sort by creation date
+        sortOptions = { createdAt: -1 };
+    }
+    
+    const projects = await Project.find(query)
         .populate("createdBy", "name username")
         .populate("members", "name username")
-        .sort({ createdAt: -1 });
+        .sort(sortOptions);
     
     console.log(`Found ${projects.length} projects`);
     
+    // Get unique categories, tags, and skills for filter dropdowns
+    const allProjects = await Project.find({});
+    const categories = [...new Set(allProjects.map(p => p.category))];
+    const allTags = [...new Set(allProjects.flatMap(p => p.tags))];
+    const allSkills = [...new Set(allProjects.flatMap(p => p.requiredSkills))];
+    
     res.render("main/projects.ejs", {
         title: "Browse Projects - DevConnect",
-        projects
+        projects,
+        filters: { category, tag, skill, status, sortBy },
+        categories,
+        allTags,
+        allSkills
     });
 }));
 
@@ -33,17 +77,24 @@ router.get("/new", isLoggedin, wrapAsync(async(req, res) => {
 //------------------------------- Create Project -------------------------------//
 
 router.post("/", isLoggedin, wrapAsync(async(req, res) => {
-    const { title, description, techStack, requiredSkills, teamSize, duration, status } = req.body;
+    const { title, description, techStack, requiredSkills, teamSize, duration, status, category, tags } = req.body;
     const newProject = new Project({
         title,
         description,
         techStack: Array.isArray(techStack) ? techStack : techStack.split(',').map(s => s.trim()),
         requiredSkills: Array.isArray(requiredSkills) ? requiredSkills : requiredSkills.split(',').map(s => s.trim()),
+        tags: tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim())) : [],
+        category: category || "other",
         teamSize,
         duration,
         status: status || "open",
         createdBy: req.user._id,
-        members: [req.user._id]
+        members: [req.user._id],
+        analytics: {
+            views: 0,
+            uniqueViewers: [],
+            popularity: 0
+        }
     });
     
     await newProject.save();
@@ -55,24 +106,147 @@ router.post("/", isLoggedin, wrapAsync(async(req, res) => {
     req.flash("success", "Project created successfully!");
     res.redirect("/projects");
 }));
+
+// ==================== User Invitations ====================
+// Get user's pending invitations
+router.get("/invitations", isLoggedin, wrapAsync(async(req, res) => {
+    try {
+        const projects = await Project.find({
+            "invitations.user": req.user._id,
+            "invitations.status": "pending"
+        })
+        .populate("createdBy", "name username")
+        .populate("invitations.user", "name username email")
+        .populate("invitations.invitedBy", "name username");
+        
+        // Filter to get only user's pending invitations
+        const invitations = projects.map(project => {
+            const invitation = project.invitations.find(
+                inv => inv.user && inv.user._id && inv.user._id.toString() === req.user._id.toString() && inv.status === "pending"
+            );
+            if (!invitation) return null;
+            
+            return {
+                project,
+                invitation
+            };
+        }).filter(item => item !== null && item.invitation);
+        
+        res.render("main/project-invitations.ejs", {
+            title: "Project Invitations - DevConnect",
+            invitations
+        });
+    } catch (error) {
+        console.error("Error fetching invitations:", error);
+        req.flash("error", "Failed to load invitations");
+        res.redirect("/projects");
+    }
+}));
+
+// ==================== Advanced Search ====================
+router.get("/search/advanced", wrapAsync(async(req, res) => {
+    const { category, tags, skills, status, sortBy } = req.query;
+    
+    let query = {};
+    
+    // Filter by category
+    if (category && category !== "all") {
+        query.category = category;
+    }
+    
+    // Filter by tags
+    if (tags) {
+        const tagArray = Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim());
+        query.tags = { $in: tagArray };
+    }
+    
+    // Filter by required skills
+    if (skills) {
+        const skillArray = Array.isArray(skills) ? skills : skills.split(',').map(s => s.trim());
+        query.requiredSkills = { $in: skillArray };
+    }
+    
+    // Filter by status
+    if (status) {
+        query.status = status;
+    }
+    
+    let sortOptions = { createdAt: -1 }; // Default sort by newest
+    
+    // Sort options
+    if (sortBy === "popularity") {
+        sortOptions = { "analytics.popularity": -1 };
+    } else if (sortBy === "views") {
+        sortOptions = { "analytics.views": -1 };
+    } else if (sortBy === "members") {
+        sortOptions = { "members": -1 };
+    }
+    
+    const projects = await Project.find(query)
+        .populate("createdBy", "name username")
+        .populate("members", "name username")
+        .sort(sortOptions);
+    
+    res.render("main/projects.ejs", {
+        title: "Search Projects - DevConnect",
+        projects,
+        filters: { category, tags, skills, status, sortBy }
+    });
+}));
+
 //-------------------------------- Project Details ------------------------------//
 // Show project details
 router.get("/:id", wrapAsync(async(req, res) => {
     const { id } = req.params;
-    // TODO: Fetch project by ID from database
+    
     const project = await Project.findById(id)
         .populate("createdBy", "name username email bio skills")
         .populate("members", "name username email skills")
-        .populate("tasks.assignedTo", "name username");
+        .populate("tasks.assignedTo", "name username")
+        .populate("joinRequests.user", "name username email skills")
+        .populate("invitations.user", "name username");
     
     if (!project) {
         req.flash("error", "Project not found!");
         return res.redirect("/projects");
     }
     
+    // Track view if user is logged in
+    if (req.user) {
+        project.analytics.views += 1;
+        
+        // Add to unique viewers if not already present
+        if (!project.analytics.uniqueViewers.includes(req.user._id)) {
+            project.analytics.uniqueViewers.push(req.user._id);
+        }
+        
+        // Recalculate popularity
+        project.calculatePopularity();
+        
+        await project.save();
+    }
+    
+    // Check if current user has pending join request
+    let userJoinRequest = null;
+    if (req.user) {
+        userJoinRequest = project.joinRequests.find(
+            r => r.user.equals(req.user._id) && r.status === "pending"
+        );
+    }
+    
+    // Check if current user has pending invitation
+    let userInvitation = null;
+    if (req.user) {
+        userInvitation = project.invitations.find(
+            inv => inv.user.equals(req.user._id) && inv.status === "pending"
+        );
+    }
+    
     res.render("main/project-detail.ejs", {
         title: `${project.title} - DevConnect`,
-        project
+        project,
+        userJoinRequest,
+        userInvitation
     });
 }));
 //-------------------------------- Project Editing ------------------------------// 
@@ -102,7 +276,7 @@ router.get("/:id/edit", isLoggedin, wrapAsync(async(req, res) => {
 // Update project
 router.put("/:id", isLoggedin, wrapAsync(async(req, res) => {
     const { id } = req.params;
-    const { title, description, techStack, teamSize, duration, requiredSkills, status } = req.body;
+    const { title, description, techStack, teamSize, duration, requiredSkills, status, category, tags } = req.body;
     
     const project = await Project.findById(id);
     
@@ -122,6 +296,8 @@ router.put("/:id", isLoggedin, wrapAsync(async(req, res) => {
         description,
         techStack: Array.isArray(techStack) ? techStack : techStack.split(',').map(s => s.trim()),
         requiredSkills: Array.isArray(requiredSkills) ? requiredSkills : requiredSkills.split(',').map(s => s.trim()),
+        tags: tags ? (Array.isArray(tags) ? tags : tags.split(',').map(t => t.trim())) : [],
+        category: category || project.category,
         teamSize,
         duration,
         status
@@ -353,14 +529,543 @@ router.delete("/:id/tasks/:taskId", isLoggedin, wrapAsync(async(req, res) => {
     res.redirect(`/projects/${id}/dashboard`);
 }));
 
+// ==================== Join Request System ====================
+
+// Submit join request
+router.post("/:id/request-join", isLoggedin, wrapAsync(async(req, res) => {
+    const { id } = req.params;
+    const { message } = req.body;
+    
+    const project = await Project.findById(id);
+    
+    if (!project) {
+        req.flash("error", "Project not found!");
+        return res.redirect("/projects");
+    }
+    
+    // Check if user is already a member
+    if (project.members.includes(req.user._id)) {
+        req.flash("error", "You are already a member of this project!");
+        return res.redirect(`/projects/${id}`);
+    }
+    
+    // Check if user already has a pending request
+    const existingRequest = project.joinRequests.find(
+        req => req.user.equals(req.user._id) && req.status === "pending"
+    );
+    
+    if (existingRequest) {
+        req.flash("error", "You already have a pending join request!");
+        return res.redirect(`/projects/${id}`);
+    }
+    
+    // Add join request
+    await Project.findByIdAndUpdate(id, {
+        $push: {
+            joinRequests: {
+                user: req.user._id,
+                message: message || "",
+                status: "pending",
+                requestedAt: Date.now()
+            }
+        }
+    });
+    
+    // Send notification to project owner
+    const notificationData = templates.joinRequest(project.title, req.user.name || req.user.username);
+    await createNotification({
+        userId: project.createdBy,
+        type: "join_request",
+        title: notificationData.title,
+        message: notificationData.message,
+        projectId: project._id,
+        senderId: req.user._id,
+        actionUrl: `/projects/${id}/join-requests`
+    });
+    
+    req.flash("success", "Join request submitted! Waiting for approval.");
+    res.redirect(`/projects/${id}`);
+}));
+
+// View join requests (project owner only)
+router.get("/:id/join-requests", isLoggedin, wrapAsync(async(req, res) => {
+    const { id } = req.params;
+    
+    const project = await Project.findById(id)
+        .populate("joinRequests.user", "name username email skills bio")
+        .populate("createdBy", "name username");
+    
+    if (!project) {
+        req.flash("error", "Project not found!");
+        return res.redirect("/projects");
+    }
+    
+    // Check if user is the project owner
+    if (!project.createdBy._id.equals(req.user._id)) {
+        req.flash("error", "Only the project owner can view join requests!");
+        return res.redirect(`/projects/${id}`);
+    }
+    
+    // Filter pending requests
+    const pendingRequests = project.joinRequests.filter(req => req.status === "pending");
+    
+    res.render("main/project-join-requests.ejs", {
+        title: `Join Requests - ${project.title}`,
+        project,
+        joinRequests: pendingRequests
+    });
+}));
+
+// Approve join request
+router.post("/:id/join-requests/:requestId/approve", isLoggedin, wrapAsync(async(req, res) => {
+    const { id, requestId } = req.params;
+    
+    const project = await Project.findById(id);
+    
+    if (!project) {
+        req.flash("error", "Project not found!");
+        return res.redirect("/projects");
+    }
+    
+    // Check if user is the project owner
+    if (!project.createdBy.equals(req.user._id)) {
+        req.flash("error", "Only the project owner can approve requests!");
+        return res.redirect(`/projects/${id}`);
+    }
+    
+    // Find the request
+    const request = project.joinRequests.id(requestId);
+    
+    if (!request) {
+        req.flash("error", "Request not found!");
+        return res.redirect(`/projects/${id}/join-requests`);
+    }
+    
+    // Update request status
+    request.status = "approved";
+    
+    // Add user to members
+    if (!project.members.includes(request.user)) {
+        project.members.push(request.user);
+    }
+    
+    await project.save();
+    
+    // Add project to user's projectsJoined
+    await User.findByIdAndUpdate(request.user, {
+        $addToSet: { projectsJoined: id }
+    });
+    
+    // Notify requester that their request was approved
+    const approvalNotification = templates.joinRequestApproved(project.title);
+    await createNotification({
+        userId: request.user,
+        type: "join_request_approved",
+        title: approvalNotification.title,
+        message: approvalNotification.message,
+        projectId: project._id,
+        senderId: req.user._id,
+        actionUrl: `/projects/${id}`
+    });
+    
+    // Notify all existing members about new member
+    const newMember = await User.findById(request.user);
+    const memberNotification = templates.memberJoined(project.title, newMember.name || newMember.username);
+    const memberNotifications = project.members
+        .filter(memberId => !memberId.equals(request.user) && !memberId.equals(project.createdBy))
+        .map(memberId => ({
+            userId: memberId,
+            type: "member_joined",
+            title: memberNotification.title,
+            message: memberNotification.message,
+            projectId: project._id,
+            senderId: request.user,
+            actionUrl: `/projects/${id}`
+        }));
+    
+    if (memberNotifications.length > 0) {
+        await createBulkNotifications(memberNotifications);
+    }
+    
+    // Also notify project owner if they're not the one approving
+    if (!project.createdBy.equals(req.user._id)) {
+        await createNotification({
+            userId: project.createdBy,
+            type: "member_joined",
+            title: memberNotification.title,
+            message: memberNotification.message,
+            projectId: project._id,
+            senderId: request.user,
+            actionUrl: `/projects/${id}`
+        });
+    }
+    
+    req.flash("success", "Join request approved!");
+    res.redirect(`/projects/${id}/join-requests`);
+}));
+
+// Reject join request
+router.post("/:id/join-requests/:requestId/reject", isLoggedin, wrapAsync(async(req, res) => {
+    const { id, requestId } = req.params;
+    
+    const project = await Project.findById(id);
+    
+    if (!project) {
+        req.flash("error", "Project not found!");
+        return res.redirect("/projects");
+    }
+    
+    // Check if user is the project owner
+    if (!project.createdBy.equals(req.user._id)) {
+        req.flash("error", "Only the project owner can reject requests!");
+        return res.redirect(`/projects/${id}`);
+    }
+    
+    // Find and update the request
+    const request = project.joinRequests.id(requestId);
+    
+    if (!request) {
+        req.flash("error", "Request not found!");
+        return res.redirect(`/projects/${id}/join-requests`);
+    }
+    
+    request.status = "rejected";
+    await project.save();
+    
+    // Notify requester that their request was rejected
+    const rejectionNotification = templates.joinRequestRejected(project.title);
+    await createNotification({
+        userId: request.user,
+        type: "join_request_rejected",
+        title: rejectionNotification.title,
+        message: rejectionNotification.message,
+        projectId: project._id,
+        senderId: req.user._id,
+        actionUrl: `/projects/${id}`
+    });
+    
+    req.flash("success", "Join request rejected!");
+    res.redirect(`/projects/${id}/join-requests`);
+}));
+
+// ==================== Project Invitation System ====================
+
+// Send invitation to user
+router.post("/:id/invite", isLoggedin, wrapAsync(async(req, res) => {
+    const { id } = req.params;
+    const { userId, message } = req.body;
+    
+    try {
+        if (!userId) {
+            req.flash("error", "User ID or username is required!");
+            return res.redirect(`/projects/${id}`);
+        }
+        
+        const project = await Project.findById(id);
+        
+        if (!project) {
+            req.flash("error", "Project not found!");
+            return res.redirect("/projects");
+        }
+        
+        // Check if user is the project owner or a member
+        if (!project.createdBy.equals(req.user._id) && !project.members.includes(req.user._id)) {
+            req.flash("error", "Only project members can send invitations!");
+            return res.redirect(`/projects/${id}`);
+        }
+        
+        // Find target user by ID or username
+        let targetUser = null;
+        
+        // Try to find by ID first
+        if (userId.match(/^[0-9a-fA-F]{24}$/)) {
+            targetUser = await User.findById(userId);
+        }
+        
+        // If not found by ID, try username
+        if (!targetUser) {
+            targetUser = await User.findOne({ username: userId });
+        }
+        
+        if (!targetUser) {
+            req.flash("error", "User not found! Please check the username or user ID.");
+            return res.redirect(`/projects/${id}`);
+        }
+        
+        const targetUserId = targetUser._id;
+        
+        // Check if user is already a member
+        if (project.members.some(member => member.equals(targetUserId))) {
+            req.flash("error", "User is already a member of this project!");
+            return res.redirect(`/projects/${id}`);
+        }
+        
+        // Check if invitation already exists
+        const existingInvitation = project.invitations.find(
+            inv => inv.user.equals(targetUserId) && inv.status === "pending"
+        );
+        
+        if (existingInvitation) {
+            req.flash("error", "User already has a pending invitation!");
+            return res.redirect(`/projects/${id}`);
+        }
+        
+        // Add invitation
+        await Project.findByIdAndUpdate(id, {
+            $push: {
+                invitations: {
+                    user: targetUserId,
+                    invitedBy: req.user._id,
+                    message: message || "",
+                    status: "pending",
+                    invitedAt: Date.now()
+                }
+            }
+        });
+        
+        // Send notification to invited user
+        const invitationNotification = templates.invitation(project.title, req.user.name || req.user.username);
+        await createNotification({
+            userId: targetUserId,
+            type: "invitation",
+            title: invitationNotification.title,
+            message: invitationNotification.message,
+            projectId: project._id,
+            senderId: req.user._id,
+            actionUrl: `/projects/invitations`
+        });
+        
+        req.flash("success", `Invitation sent successfully to ${targetUser.username}!`);
+        res.redirect(`/projects/${id}`);
+    } catch (error) {
+        console.error("Error sending invitation:", error);
+        req.flash("error", "Failed to send invitation. Please try again.");
+        res.redirect(`/projects/${id}`);
+    }
+}));
+
+// View user's project invitations
+// Accept invitation
+router.post("/:id/invitations/:invitationId/accept", isLoggedin, wrapAsync(async(req, res) => {
+    const { id, invitationId } = req.params;
+    
+    const project = await Project.findById(id);
+    
+    if (!project) {
+        req.flash("error", "Project not found!");
+        return res.redirect("/projects");
+    }
+    
+    // Find the invitation
+    const invitation = project.invitations.id(invitationId);
+    
+    if (!invitation) {
+        req.flash("error", "Invitation not found!");
+        return res.redirect("/projects/invitations");
+    }
+    
+    // Check if invitation is for current user
+    if (!invitation.user.equals(req.user._id)) {
+        req.flash("error", "This invitation is not for you!");
+        return res.redirect("/projects/invitations");
+    }
+    
+    // Update invitation status
+    invitation.status = "accepted";
+    
+    // Add user to members
+    if (!project.members.includes(req.user._id)) {
+        project.members.push(req.user._id);
+    }
+    
+    await project.save();
+    
+    // Add project to user's projectsJoined
+    await User.findByIdAndUpdate(req.user._id, {
+        $addToSet: { projectsJoined: id }
+    });
+    
+    // Notify the person who sent the invitation
+    const acceptNotification = templates.invitationAccepted(project.title, req.user.name || req.user.username);
+    await createNotification({
+        userId: invitation.invitedBy,
+        type: "invitation_accepted",
+        title: acceptNotification.title,
+        message: acceptNotification.message,
+        projectId: project._id,
+        senderId: req.user._id,
+        actionUrl: `/projects/${id}`
+    });
+    
+    // Notify all existing members about new member
+    const memberNotification = templates.memberJoined(project.title, req.user.name || req.user.username);
+    const memberNotifications = project.members
+        .filter(memberId => !memberId.equals(req.user._id) && !memberId.equals(invitation.invitedBy))
+        .map(memberId => ({
+            userId: memberId,
+            type: "member_joined",
+            title: memberNotification.title,
+            message: memberNotification.message,
+            projectId: project._id,
+            senderId: req.user._id,
+            actionUrl: `/projects/${id}`
+        }));
+    
+    if (memberNotifications.length > 0) {
+        await createBulkNotifications(memberNotifications);
+    }
+    
+    req.flash("success", "Invitation accepted! Welcome to the project!");
+    res.redirect(`/projects/${id}`);
+}));
+
+// Decline invitation
+router.post("/:id/invitations/:invitationId/decline", isLoggedin, wrapAsync(async(req, res) => {
+    const { id, invitationId } = req.params;
+    
+    const project = await Project.findById(id);
+    
+    if (!project) {
+        req.flash("error", "Project not found!");
+        return res.redirect("/projects");
+    }
+    
+    // Find the invitation
+    const invitation = project.invitations.id(invitationId);
+    
+    if (!invitation) {
+        req.flash("error", "Invitation not found!");
+        return res.redirect("/projects/invitations");
+    }
+    
+    // Check if invitation is for current user
+    if (!invitation.user.equals(req.user._id)) {
+        req.flash("error", "This invitation is not for you!");
+        return res.redirect("/projects/invitations");
+    }
+    
+    invitation.status = "declined";
+    await project.save();
+    
+    // Notify the person who sent the invitation
+    const declineNotification = templates.invitationDeclined(project.title, req.user.name || req.user.username);
+    await createNotification({
+        userId: invitation.invitedBy,
+        type: "invitation_declined",
+        title: declineNotification.title,
+        message: declineNotification.message,
+        projectId: project._id,
+        senderId: req.user._id,
+        actionUrl: `/projects/${id}`
+    });
+    
+    req.flash("success", "Invitation declined!");
+    res.redirect("/projects/invitations");
+}));
+
+// ==================== Project Analytics ====================
+
+// Track project view
+router.post("/:id/track-view", isLoggedin, wrapAsync(async(req, res) => {
+    const { id } = req.params;
+    
+    const project = await Project.findById(id);
+    
+    if (!project) {
+        return res.status(404).json({ success: false });
+    }
+    
+    // Increment view count
+    project.analytics.views += 1;
+    
+    // Add to unique viewers if not already present
+    if (!project.analytics.uniqueViewers.includes(req.user._id)) {
+        project.analytics.uniqueViewers.push(req.user._id);
+    }
+    
+    // Recalculate popularity
+    project.calculatePopularity();
+    
+    await project.save();
+    
+    res.json({ success: true, views: project.analytics.views });
+}));
+
+// Get project analytics (owner only)
+router.get("/:id/analytics", isLoggedin, wrapAsync(async(req, res) => {
+    const { id } = req.params;
+    
+    const project = await Project.findById(id)
+        .populate("createdBy", "name username")
+        .populate("analytics.uniqueViewers", "name username");
+    
+    if (!project) {
+        req.flash("error", "Project not found!");
+        return res.redirect("/projects");
+    }
+    
+    // Check if user is the project owner
+    if (!project.createdBy._id.equals(req.user._id)) {
+        req.flash("error", "Only the project owner can view analytics!");
+        return res.redirect(`/projects/${id}`);
+    }
+    
+    // Calculate additional metrics
+    const memberCount = project.members.length;
+    const taskCount = project.tasks.length;
+    const completedTasks = project.tasks.filter(t => t.status === "completed").length;
+    const completionRate = taskCount > 0 ? Math.round((completedTasks / taskCount) * 100) : 0;
+    
+    res.render("main/project-analytics.ejs", {
+        title: `Analytics - ${project.title}`,
+        project,
+        analytics: {
+            views: project.analytics.views,
+            uniqueViewers: project.analytics.uniqueViewers,
+            popularity: Math.round(project.analytics.popularity),
+            memberCount,
+            taskCount,
+            completedTasks,
+            completionRate
+        }
+    });
+}));
+
+// ==================== Project Filtering & Search ====================
+
+// Advanced project search with filters
 // ==================== Project Chat ====================
 
 // Get project chat
 router.get("/:id/chat", isLoggedin, wrapAsync(async(req, res) => {
     const { id } = req.params;
-    // TODO: Fetch chat messages for project
+    
+    // Fetch project with members
+    const project = await Project.findById(id)
+        .populate("createdBy", "name username email")
+        .populate("members", "name username email profilePicture");
+    
+    if (!project) {
+        req.flash("error", "Project not found!");
+        return res.redirect("/projects");
+    }
+    
+    // Check if user is a member
+    if (!project.members.some(member => member._id.equals(req.user._id))) {
+        req.flash("error", "You must be a project member to access the chat!");
+        return res.redirect(`/projects/${id}`);
+    }
+    
+    // Fetch recent messages (last 50)
+    const messages = await Message.find({ projectID: id })
+        .populate("sender", "name username profilePicture")
+        .sort({ timestamp: 1 })
+        .limit(50);
+    
     res.render("main/project-chat.ejs", {
-        title: "Project Chat - DevConnect"
+        title: `${project.title} - Team Chat`,
+        project,
+        messages
     });
 }));
 
@@ -368,8 +1073,56 @@ router.get("/:id/chat", isLoggedin, wrapAsync(async(req, res) => {
 router.post("/:id/chat", isLoggedin, wrapAsync(async(req, res) => {
     const { id } = req.params;
     const { message } = req.body;
-    // TODO: Save message to database and broadcast via Socket.io
-    res.json({ success: true, message });
+    
+    // Validate message
+    if (!message || message.trim().length === 0) {
+        return res.status(400).json({ success: false, error: "Message cannot be empty" });
+    }
+    
+    // Check if project exists and user is a member
+    const project = await Project.findById(id);
+    
+    if (!project) {
+        return res.status(404).json({ success: false, error: "Project not found" });
+    }
+    
+    if (!project.members.includes(req.user._id)) {
+        return res.status(403).json({ success: false, error: "You must be a project member to send messages" });
+    }
+    
+    // Create and save message
+    const newMessage = new Message({
+        sender: req.user._id,
+        projectID: id,
+        content: message.trim(),
+        timestamp: new Date()
+    });
+    
+    await newMessage.save();
+    
+    // Populate sender info
+    await newMessage.populate("sender", "name username profilePicture");
+    
+    // Broadcast to all users in the project room via Socket.io
+    const io = req.app.get('io');
+    if (io) {
+        io.to(id).emit('newMessage', {
+            _id: newMessage._id,
+            sender: {
+                _id: newMessage.sender._id,
+                name: newMessage.sender.name,
+                username: newMessage.sender.username,
+                profilePicture: newMessage.sender.profilePicture
+            },
+            content: newMessage.content,
+            timestamp: newMessage.timestamp
+        });
+    }
+    
+    res.json({ 
+        success: true, 
+        message: newMessage
+    });
 }));
 
 module.exports = router;

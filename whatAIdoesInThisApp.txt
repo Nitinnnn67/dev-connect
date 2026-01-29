@@ -1,0 +1,10 @@
+🤝 What AI CAN Help You With (If You Ask)
+I can help you:
+
+Fix bugs in existing code
+Add new features (like file upload, email sending)
+Improve frontend code
+Write tests
+Optimize performance
+Review and suggest improvements
+Answer questions about how things work

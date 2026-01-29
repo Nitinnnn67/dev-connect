@@ -1,0 +1,196 @@
+<% layout("/layout/boilerplate") %>
+
+<!-- Socket.io Client -->
+<script src="/socket.io/socket.io.js"></script>
+
+<link rel="stylesheet" href="/css/project-chat.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Store user data for Socket.io -->
+<script>
+    document.body.dataset.userId = '<%= currentUser._id %>';
+    document.body.dataset.userName = '<%= currentUser.name || currentUser.username %>';
+</script>
+
+<!-- Chat Container -->
+<div class="chat-container">
+    <!-- Chat Header -->
+    <div class="chat-header">
+        <div class="header-left">
+            <a href="/projects/<%= project._id %>/dashboard" class="back-btn" title="Back to Dashboard">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div class="project-info">
+                <h1 class="project-title"><%= project.title %></h1>
+                <div class="project-meta">
+                    <span class="online-status">
+                        <i class="fas fa-circle"></i>
+                        <span id="onlineCount"><%= project.members.length %></span> online
+                    </span>
+                    <span class="member-count">
+                        <i class="fas fa-users"></i>
+                        <%= project.members.length %> members
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn-icon" id="toggleMembersBtn" title="Toggle Members Panel">
+                <i class="fas fa-users"></i>
+            </button>
+            <button class="btn-icon" id="searchMessagesBtn" title="Search Messages">
+                <i class="fas fa-search"></i>
+            </button>
+            <a href="/projects/<%= project._id %>/dashboard" class="btn btn-primary">
+                <i class="fas fa-th-large"></i>
+                Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Chat Body -->
+    <div class="chat-body">
+        <!-- Messages Area -->
+        <div class="messages-section">
+            <!-- Date Separator -->
+            <div class="date-separator">
+                <span>Today</span>
+            </div>
+
+            <!-- Messages Container -->
+            <div class="messages-container" id="messagesContainer">
+                <!-- Welcome Message -->
+                <div class="system-message">
+                    <i class="fas fa-info-circle"></i>
+                    <p>Welcome to <strong><%= project.title %></strong> team chat! Start collaborating with your team.</p>
+                </div>
+
+                <!-- Sample Messages (to be replaced with real data) -->
+                <% if (locals.messages && messages.length > 0) { %>
+                    <% messages.forEach(message => { %>
+                        <div class="message <%= message.sender._id.equals(currentUser._id) ? 'message-sent' : 'message-received' %>">
+                            <% if (!message.sender._id.equals(currentUser._id)) { %>
+                                <div class="message-avatar">
+                                    <% if (message.sender.profilePicture) { %>
+                                        <img src="<%= message.sender.profilePicture %>" alt="<%= message.sender.name %>">
+                                    <% } else { %>
+                                        <div class="avatar-placeholder">
+                                            <%= message.sender.name.charAt(0).toUpperCase() %>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            <% } %>
+                            <div class="message-content">
+                                <% if (!message.sender._id.equals(currentUser._id)) { %>
+                                    <div class="message-header">
+                                        <span class="sender-name"><%= message.sender.name %></span>
+                                        <span class="message-time"><%= new Date(message.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) %></span>
+                                    </div>
+                                <% } %>
+                                <div class="message-bubble">
+                                    <p><%= message.content %></p>
+                                    <% if (message.sender._id.equals(currentUser._id)) { %>
+                                        <span class="message-time"><%= new Date(message.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) %></span>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <!-- No messages yet -->
+                    <div class="no-messages">
+                        <i class="fas fa-comments"></i>
+                        <h3>No messages yet</h3>
+                        <p>Be the first to send a message to your team!</p>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator" style="display: none;">
+                <div class="typing-avatar">
+                    <div class="avatar-placeholder">?</div>
+                </div>
+                <div class="typing-dots">
+                    <span class="typing-name">Someone</span> is typing
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Members Sidebar -->
+        <div class="members-sidebar" id="membersSidebar">
+            <div class="sidebar-header">
+                <h3>Team Members</h3>
+                <button class="close-sidebar" id="closeSidebarBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="members-list">
+                <% project.members.forEach(member => { %>
+                    <div class="member-item">
+                        <div class="member-avatar">
+                            <% if (member.profilePicture) { %>
+                                <img src="<%= member.profilePicture %>" alt="<%= member.name %>">
+                            <% } else { %>
+                                <div class="avatar-placeholder">
+                                    <%= member.name.charAt(0).toUpperCase() %>
+                                </div>
+                            <% } %>
+                            <span class="status-indicator online"></span>
+                        </div>
+                        <div class="member-info">
+                            <h4><%= member.name %></h4>
+                            <p>@<%= member.username %></p>
+                            <% if (project.createdBy._id.equals(member._id)) { %>
+                                <span class="member-badge">
+                                    <i class="fas fa-crown"></i> Owner
+                                </span>
+                            <% } %>
+                        </div>
+                        <a href="/users/<%= member._id %>" class="view-profile-btn" title="View Profile">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Input -->
+    <div class="chat-input-container">
+        <form id="chatForm" class="chat-form">
+            <button type="button" class="btn-icon" id="attachFileBtn" title="Attach File">
+                <i class="fas fa-paperclip"></i>
+            </button>
+            <button type="button" class="btn-icon" id="emojiBtn" title="Add Emoji">
+                <i class="fas fa-smile"></i>
+            </button>
+            <div class="input-wrapper">
+                <textarea 
+                    id="messageInput" 
+                    name="message" 
+                    placeholder="Type a message..." 
+                    rows="1"
+                    required
+                ></textarea>
+            </div>
+            <button type="submit" class="btn-send" id="sendBtn" title="Send Message">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </form>
+        <div class="input-hint">
+            Press <kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for new line
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay" style="display: none;">
+    <div class="spinner"></div>
+    <p>Connecting to chat...</p>
+</div>
+
+<script src="/js/project-chat.js"></script>

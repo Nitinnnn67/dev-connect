@@ -60,42 +60,6 @@ function performSearch() {
     }
 }
 
-// Debounce function for performance
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-        usersResults.style.display = visibleUsers > 0 ? 'block' : 'none';
-    } else {
-        usersResults.style.display = 'none';
-    }
-    
-    // Show/hide no results message
-    if (visibleCount === 0) {
-        noResults.style.display = 'block';
-    } else {
-        noResults.style.display = 'none';
-    }
-    
-    // Update results count
-    updateResultsCount(visibleCount);
-}
-
-// Update results count
-function updateResultsCount(count) {
-    const resultsCount = document.querySelector('.results-count');
-    if (resultsCount) {
-        resultsCount.textContent = `Found ${count} result${count !== 1 ? 's' : ''}`;
-    }
-}
-
 // Debounce function for search input
 function debounce(func, wait) {
     let timeout;
@@ -109,8 +73,12 @@ function debounce(func, wait) {
     };
 }
 
+// Get result cards for animations
+const resultCards = document.querySelectorAll('.result-card');
+
 // Card hover effects
-resultCards.forEach(card => {
+if (resultCards.length > 0) {
+    resultCards.forEach(card => {
     card.addEventListener('mouseenter', function() {
         gsap.to(this, {
             y: -5,
@@ -128,11 +96,14 @@ resultCards.forEach(card => {
             ease: 'power2.out'
         });
     });
-});
+    });
+}
 
 // Focus search input on page load
 window.addEventListener('load', () => {
-    searchInput.focus();
+    if (searchInput) {
+        searchInput.focus();
+    }
 });
 
 // Keyboard shortcuts
@@ -140,19 +111,17 @@ document.addEventListener('keydown', (e) => {
     // Ctrl/Cmd + K to focus search
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
-        searchInput.focus();
-        searchInput.select();
+        if (searchInput) {
+            searchInput.focus();
+            searchInput.select();
+        }
     }
     
     // Escape to clear search
-    if (e.key === 'Escape') {
+    if (e.key === 'Escape' && searchInput) {
         searchInput.value = '';
         searchInput.blur();
-        filterResults();
     }
 });
-
-// Initialize
-filterResults();
 
 console.log('Search page initialized');

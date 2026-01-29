@@ -1,0 +1,172 @@
+<% layout('layout/boilerplate') -%>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">Project Analytics</h2>
+                    <p class="text-muted">
+                        <a href="/projects/<%= project._id %>" class="text-decoration-none"><%= project.title %></a>
+                    </p>
+                </div>
+                <a href="/projects/<%= project._id %>" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Project
+                </a>
+            </div>
+
+            <!-- Analytics Cards -->
+            <div class="row g-4 mb-4">
+                <!-- Views -->
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-eye fa-2x text-primary mb-3"></i>
+                            <h3 class="mb-0"><%= analytics.views %></h3>
+                            <p class="text-muted mb-0">Total Views</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Unique Viewers -->
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-users fa-2x text-success mb-3"></i>
+                            <h3 class="mb-0"><%= analytics.uniqueViewers.length %></h3>
+                            <p class="text-muted mb-0">Unique Viewers</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Popularity Score -->
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-fire fa-2x text-danger mb-3"></i>
+                            <h3 class="mb-0"><%= analytics.popularity %></h3>
+                            <p class="text-muted mb-0">Popularity Score</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Members -->
+                <div class="col-md-3">
+                    <div class="card text-center shadow-sm">
+                        <div class="card-body">
+                            <i class="fas fa-user-friends fa-2x text-info mb-3"></i>
+                            <h3 class="mb-0"><%= analytics.memberCount %></h3>
+                            <p class="text-muted mb-0">Team Members</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task Progress -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Task Progress</h5>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Completion Rate</span>
+                                <span><strong><%= analytics.completionRate %>%</strong></span>
+                            </div>
+                            <div class="progress mb-3" style="height: 25px;">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: <%= analytics.completionRate %>%;" 
+                                     aria-valuenow="<%= analytics.completionRate %>" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    <%= analytics.completionRate %>%
+                                </div>
+                            </div>
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <h4><%= analytics.taskCount %></h4>
+                                    <small class="text-muted">Total Tasks</small>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="text-success"><%= analytics.completedTasks %></h4>
+                                    <small class="text-muted">Completed</small>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="text-warning"><%= analytics.taskCount - analytics.completedTasks %></h4>
+                                    <small class="text-muted">Pending</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Info -->
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Project Information</h5>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                    <strong>Created:</strong> <%= new Date(project.createdAt).toLocaleDateString() %>
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-tag text-success me-2"></i>
+                                    <strong>Status:</strong> 
+                                    <span class="badge bg-<%= project.status === 'open' ? 'success' : project.status === 'in-progress' ? 'warning' : 'secondary' %>">
+                                        <%= project.status %>
+                                    </span>
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-folder text-info me-2"></i>
+                                    <strong>Category:</strong> 
+                                    <span class="badge bg-info"><%= project.category %></span>
+                                </li>
+                                <% if (project.tags && project.tags.length > 0) { %>
+                                    <li class="mb-2">
+                                        <i class="fas fa-tags text-warning me-2"></i>
+                                        <strong>Tags:</strong>
+                                        <% project.tags.forEach(tag => { %>
+                                            <span class="badge bg-secondary me-1"><%= tag %></span>
+                                        <% }) %>
+                                    </li>
+                                <% } %>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unique Viewers List -->
+            <% if (analytics.uniqueViewers && analytics.uniqueViewers.length > 0) { %>
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Unique Viewers</h5>
+                        <div class="row">
+                            <% analytics.uniqueViewers.slice(0, 12).forEach(viewer => { %>
+                                <div class="col-md-4 col-lg-3 mb-3">
+                                    <a href="/users/<%= viewer.username %>" class="text-decoration-none">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" 
+                                                 style="width: 40px; height: 40px;">
+                                                <%= viewer.name ? viewer.name.charAt(0).toUpperCase() : viewer.username.charAt(0).toUpperCase() %>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold"><%= viewer.name || viewer.username %></div>
+                                                <small class="text-muted">@<%= viewer.username %></small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            <% }) %>
+                        </div>
+                        <% if (analytics.uniqueViewers.length > 12) { %>
+                            <p class="text-muted mb-0 mt-2">
+                                And <%= analytics.uniqueViewers.length - 12 %> more...
+                            </p>
+                        <% } %>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
