@@ -91,8 +91,22 @@ app.use((err, req, res, next) => {
         statusCode,
         message: err.message,
         stack: err.stack,
-        url: req.originalUrl
+        url: req.originalUrl,
+        method: req.method
     });
+    
+    // Log full error for debugging
+    console.error('Full error:', err);
+    
+    // Send JSON response for API requests
+    if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+        return res.status(statusCode).json({
+            success: false,
+            error: message,
+            details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
+    }
+    
     res.status(statusCode).render("main/404.ejs");
 });
 

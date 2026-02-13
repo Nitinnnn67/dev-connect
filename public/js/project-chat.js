@@ -3,18 +3,41 @@
 // Initialize Socket.io connection
 const socket = io();
 
+// Connection status indicator
+let isConnected = false;
+
 // Check Socket.io connection
 socket.on('connect', () => {
     console.log('✓ Socket.io connected:', socket.id);
+    isConnected = true;
+    updateConnectionStatus(true);
 });
 
 socket.on('connect_error', (error) => {
     console.error('✗ Socket.io connection error:', error);
+    isConnected = false;
+    updateConnectionStatus(false);
 });
 
 socket.on('disconnect', () => {
     console.log('✗ Socket.io disconnected');
+    isConnected = false;
+    updateConnectionStatus(false);
 });
+
+// Update connection status in UI
+function updateConnectionStatus(connected) {
+    const statusIndicator = document.querySelector('.online-status');
+    if (statusIndicator) {
+        if (connected) {
+            statusIndicator.classList.remove('offline');
+            statusIndicator.classList.add('online');
+        } else {
+            statusIndicator.classList.remove('online');
+            statusIndicator.classList.add('offline');
+        }
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     // Elements
@@ -43,9 +66,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Listen for new messages
     socket.on('newMessage', function(message) {
-        console.log('New message received:', message);
+        console.log('✓ New message received via Socket.io:', message._id);
         addMessageToUI(message);
         scrollToBottom();
+        
+        // Play notification sound (optional)
+        // playNotificationSound();
+    });
+    
+    // Listen for user joined
+    socket.on('userJoined', function(data) {
+        console.log('✓ User joined the chat:', data.socketId);
+        // Optionally show a notification
+    });
+    
+    // Listen for user left
+    socket.on('userLeft', function(data) {
+        console.log('✗ User left the chat:', data.socketId);
+        // Optionally show a notification
     });
 
     // Listen for typing indicator
@@ -97,13 +135,21 @@ document.addEventListener('DOMContentLoaded', function() {
         chatForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const message = messageInput.value.trim();
-            if (!message) return;
+            const messageText = messageInput.value.trim();
+            if (!messageText) return;
+            
+            // Check if connected
+            if (!isConnected) {
+                showError('Not connected to chat server. Trying to reconnect...');
+                socket.connect();
+                return;
+            }
 
             try {
                 // Show loading state
                 sendBtn.disabled = true;
                 sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                messageInput.disabled = true;
 
                 // Send message to server
                 const response = await fetch(`/projects/${projectId}/chat`, {
@@ -111,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ message })
+                    body: JSON.stringify({ message: messageText })
                 });
 
                 if (response.ok) {
@@ -121,14 +167,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     messageInput.value = '';
                     messageInput.style.height = 'auto';
                     
-                    // Add message to UI immediately (fallback if Socket.io doesn't emit back)
-                    if (data.message) {
-                        console.log('Message sent, adding to UI:', data.message);
-                        // Message will be added via Socket.io event
-                        // But add it now as fallback
-                        addMessageToUI(data.message);
-                        scrollToBottom();
-                    }
+                    // Message will be added via Socket.io event automatically
+                    // Don't add it manually to avoid duplicates
+                    console.log('✓ Message sent successfully:', data.message._id);
                     
                     // Stop typing indicator
                     socket.emit('stopTyping', { 
@@ -136,15 +177,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         userId: currentUserId 
                     });
                 } else {
-                    throw new Error('Failed to send message');
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to send message');
                 }
             } catch (error) {
-                console.error('Error sending message:', error);
-                showError('Failed to send message. Please try again.');
+                console.error('✗ Error sending message:', error);
+                showError(error.message || 'Failed to send message. Please try again.');
             } finally {
-                // Reset button
+                // Reset button and input
                 sendBtn.disabled = false;
                 sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                messageInput.disabled = false;
+                messageInput.focus();
             }
         });
     }
@@ -158,9 +202,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add message to UI
     function addMessageToUI(message) {
+        // Check if message already exists (prevent duplicates)
+        const existingMessage = messagesContainer.querySelector(`[data-message-id="${message._id}"]`);
+        if (existingMessage) {
+            console.log('Message already exists, skipping:', message._id);
+            return;
+        }
+        
         const messageDiv = document.createElement('div');
         const isSent = message.sender._id === currentUserId;
         messageDiv.className = `message ${isSent ? 'message-sent' : 'message-received'}`;
+        messageDiv.setAttribute('data-message-id', message._id);
         
         let avatarHTML = '';
         if (!isSent) {

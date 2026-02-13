@@ -68,7 +68,7 @@
                 <!-- Sample Messages (to be replaced with real data) -->
                 <% if (locals.messages && messages.length > 0) { %>
                     <% messages.forEach(message => { %>
-                        <div class="message <%= message.sender._id.equals(currentUser._id) ? 'message-sent' : 'message-received' %>">
+                        <div class="message <%= message.sender._id.equals(currentUser._id) ? 'message-sent' : 'message-received' %>" data-message-id="<%= message._id %>">
                             <% if (!message.sender._id.equals(currentUser._id)) { %>
                                 <div class="message-avatar">
                                     <% if (message.sender.profilePicture) { %>

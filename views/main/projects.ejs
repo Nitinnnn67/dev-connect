@@ -59,6 +59,9 @@
                 <option value="popularity" <%= filters && filters.sortBy === 'popularity' ? 'selected' : '' %>>Most Popular</option>
                 <option value="views" <%= filters && filters.sortBy === 'views' ? 'selected' : '' %>>Most Viewed</option>
                 <option value="members" <%= filters && filters.sortBy === 'members' ? 'selected' : '' %>>Most Members</option>
+                <% if(hasUserSkills) { %>
+                <option value="recommended" <%= filters && filters.sortBy === 'recommended' ? 'selected' : '' %>>Recommended</option>
+                <% } %>
             </select>
             
             <% if(filters && (filters.category || filters.status || filters.sortBy)) { %>
@@ -168,7 +171,14 @@
                         <div class="project-icon" style="background: <%= gradient %>;">
                             <i class="fas <%= projectIcon %>"></i>
                         </div>
-                        <span class="status-badge <%= statusClass %>"><%= statusText %></span>
+                        <div class="card-badges">
+                            <span class="status-badge <%= statusClass %>"><%= statusText %></span>
+                            <% if (project.matchPercentage && project.matchPercentage >= 30) { %>
+                                <span class="match-badge badge-<%= project.matchBadge.color %>">
+                                    <%= project.matchBadge.icon %> <%= project.matchPercentage %>%
+                                </span>
+                            <% } %>
+                        </div>
                     </div>
                     
                     <h3 class="project-title"><%= project.title %></h3>

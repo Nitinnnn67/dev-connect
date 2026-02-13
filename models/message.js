@@ -5,12 +5,14 @@ const messageSchema = new Schema({
     sender: {
         type: Schema.Types.ObjectId,
         ref: "User",    
-        required: true
+        required: true,
+        index: true
     },
     projectID: {
         type: Schema.Types.ObjectId,            
         ref: "Project",
-        required: true
+        required: true,
+        index: true
     },
     content: {
         type: String,
@@ -18,12 +20,16 @@ const messageSchema = new Schema({
     },  
     timestamp: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+        index: true
     },
     updatedAt: {
         type: Date,
         default: Date.now
     }
 });
-module.exports = mongoose.model("Message", messageSchema);
-                // Send message to server   
+
+// Compound index for efficient querying
+messageSchema.index({ projectID: 1, timestamp: 1 });
+
+module.exports = mongoose.model("Message", messageSchema);   

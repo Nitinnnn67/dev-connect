@@ -6,6 +6,7 @@ const Project = require("../models/project.js");
 const User = require("../models/user.js");
 const Message = require("../models/message.js");
 const { createNotification, createBulkNotifications, templates } = require("../utils/notificationHelper.js");
+const { calculateSkillMatch, getRecommendedProjects, getRecommendedUsers, getMatchBadge } = require("../utils/skillMatcher.js");
 
 // ==================== Project Routes ====================
 
@@ -45,10 +46,37 @@ router.get("/", wrapAsync(async(req, res) => {
         sortOptions = { createdAt: -1 };
     }
     
-    const projects = await Project.find(query)
+    let projects = await Project.find(query)
         .populate("createdBy", "name username")
         .populate("members", "name username")
         .sort(sortOptions);
+    
+    // Add skill match information if user is logged in
+    if (req.user) {
+        try {
+            const currentUser = await User.findById(req.user._id);
+            if (currentUser && currentUser.skills && currentUser.skills.length > 0) {
+                projects = projects.map(project => {
+                    const matchInfo = calculateSkillMatch(currentUser.skills, project.requiredSkills);
+                    const projectData = project._doc || project.toObject() || project;
+                    return {
+                        ...projectData,
+                        matchPercentage: matchInfo.percentage,
+                        matchBadge: getMatchBadge(matchInfo.percentage),
+                        hasMatch: matchInfo.percentage >= 30
+                    };
+                });
+                
+                // Sort by skill match if requested
+                if (sortBy === "recommended") {
+                    projects.sort((a, b) => b.matchPercentage - a.matchPercentage);
+                }
+            }
+        } catch (error) {
+            console.error('Error calculating skill matches:', error);
+            // Continue without match information
+        }
+    }
     
     console.log(`Found ${projects.length} projects`);
     
@@ -64,7 +92,8 @@ router.get("/", wrapAsync(async(req, res) => {
         filters: { category, tag, skill, status, sortBy },
         categories,
         allTags,
-        allSkills
+        allSkills,
+        hasUserSkills: req.user && req.user.skills && req.user.skills.length > 0
     });
 }));
 
@@ -242,11 +271,22 @@ router.get("/:id", wrapAsync(async(req, res) => {
         );
     }
     
+    // Calculate skill match for current user
+    let skillMatch = null;
+    if (req.user) {
+        const currentUser = await User.findById(req.user._id);
+        if (currentUser && currentUser.skills && currentUser.skills.length > 0) {
+            skillMatch = calculateSkillMatch(currentUser.skills, project.requiredSkills);
+            skillMatch.badge = getMatchBadge(skillMatch.percentage);
+        }
+    }
+    
     res.render("main/project-detail.ejs", {
         title: `${project.title} - DevConnect`,
         project,
         userJoinRequest,
-        userInvitation
+        userInvitation,
+        skillMatch
     });
 }));
 //-------------------------------- Project Editing ------------------------------// 
@@ -422,12 +462,41 @@ router.get("/:id/dashboard", isLoggedin, wrapAsync(async(req, res) => {
     const completedTasks = project.tasks.filter(task => task.status === "completed").length;
     const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
     
+    // Get recommended users if project has required skills
+    let recommendedUsers = [];
+    try {
+        if (project.requiredSkills && project.requiredSkills.length > 0) {
+            const memberIds = project.members.map(m => m._id);
+            const availableUsers = await User.find({
+                _id: { $nin: [...memberIds, project.createdBy._id] },
+                profilePublic: true,
+                skills: { $exists: true, $ne: [] }
+            }).select("name username profilePicture skills bio").limit(50);
+            
+            const recommendations = getRecommendedUsers(project, availableUsers, 40);
+            recommendedUsers = recommendations.slice(0, 8).map(rec => {
+                const userData = rec.user._doc || rec.user.toObject() || rec.user;
+                return {
+                    ...userData,
+                    _id: rec.user._id,
+                    matchPercentage: rec.percentage,
+                    matchedSkills: rec.matchedSkills,
+                    badge: getMatchBadge(rec.percentage)
+                };
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching recommended users:', error);
+        // Continue without recommendations
+    }
+    
     res.render("main/project-dashboard.ejs", {
         title: `${project.title} Dashboard - DevConnect`,
         project,
         progress,
         totalTasks,
-        completedTasks
+        completedTasks,
+        recommendedUsers
     });
 }));
 
@@ -1098,30 +1167,203 @@ router.post("/:id/chat", isLoggedin, wrapAsync(async(req, res) => {
         timestamp: new Date()
     });
     
-    await newMessage.save();
+    try {
+        await newMessage.save();
+        console.log('✓ Message saved to database:', newMessage._id);
+    } catch (saveError) {
+        console.error('✗ Error saving message:', saveError);
+        return res.status(500).json({ success: false, error: "Failed to save message" });
+    }
     
     // Populate sender info
     await newMessage.populate("sender", "name username profilePicture");
     
-    // Broadcast to all users in the project room via Socket.io
+    // Broadcast to all users in the project room via Socket.io (including sender)
     const io = req.app.get('io');
     if (io) {
-        io.to(id).emit('newMessage', {
-            _id: newMessage._id,
+        const messageData = {
+            _id: newMessage._id.toString(),
             sender: {
-                _id: newMessage.sender._id,
-                name: newMessage.sender.name,
+                _id: newMessage.sender._id.toString(),
+                name: newMessage.sender.name || newMessage.sender.username,
                 username: newMessage.sender.username,
-                profilePicture: newMessage.sender.profilePicture
+                profilePicture: newMessage.sender.profilePicture || null
             },
             content: newMessage.content,
             timestamp: newMessage.timestamp
-        });
+        };
+        
+        // Emit to all clients in the room (including sender)
+        io.to(id).emit('newMessage', messageData);
+        console.log('✓ Message broadcasted to room:', id);
+    } else {
+        console.error('✗ Socket.io not available');
     }
     
     res.json({ 
         success: true, 
         message: newMessage
+    });
+}));
+
+//------------------------------- Skill-Based Recommendations ------------------------------//
+
+/**
+ * GET /projects/api/recommended
+ * Get recommended projects for the logged-in user based on their skills
+ */
+router.get("/api/recommended", isLoggedin, wrapAsync(async(req, res) => {
+    const userId = req.user._id;
+    const minMatch = parseInt(req.query.minMatch) || 30;
+    const limit = parseInt(req.query.limit) || 10;
+    
+    // Get user with skills
+    const user = await User.findById(userId);
+    
+    if (!user || !user.skills || user.skills.length === 0) {
+        return res.json({
+            success: true,
+            recommendations: [],
+            message: "Add skills to your profile to get personalized recommendations"
+        });
+    }
+    
+    // Get all open projects that user is not a member of
+    const projects = await Project.find({ 
+        status: "open",
+        members: { $ne: userId },
+        createdBy: { $ne: userId }
+    })
+    .populate("createdBy", "name username profilePicture")
+    .populate("members", "name username");
+    
+    // Get recommendations
+    const recommendations = getRecommendedProjects(user, projects, minMatch);
+    
+    // Limit results
+    const limitedRecommendations = recommendations.slice(0, limit).map(rec => ({
+        project: rec.project,
+        matchPercentage: rec.percentage,
+        matchedSkills: rec.matchedSkills,
+        missingSkills: rec.missingSkills,
+        relatedSkills: rec.relatedSkills,
+        badge: getMatchBadge(rec.percentage)
+    }));
+    
+    res.json({
+        success: true,
+        recommendations: limitedRecommendations,
+        total: recommendations.length
+    });
+}));
+
+/**
+ * GET /projects/:id/api/recommended-users
+ * Get recommended users for a project based on required skills
+ * Only project owner and members can access
+ */
+router.get("/:id/api/recommended-users", isLoggedin, wrapAsync(async(req, res) => {
+    const { id } = req.params;
+    const minMatch = parseInt(req.query.minMatch) || 40;
+    const limit = parseInt(req.query.limit) || 20;
+    
+    // Get project
+    const project = await Project.findById(id)
+        .populate("createdBy", "name username")
+        .populate("members", "_id");
+    
+    if (!project) {
+        return res.status(404).json({
+            success: false,
+            message: "Project not found"
+        });
+    }
+    
+    // Check if user is owner or member
+    const userId = req.user._id;
+    const isOwner = project.createdBy._id.equals(userId);
+    const isMember = project.members.some(member => member._id.equals(userId));
+    
+    if (!isOwner && !isMember) {
+        return res.status(403).json({
+            success: false,
+            message: "Only project owner and members can view recommended users"
+        });
+    }
+    
+    if (!project.requiredSkills || project.requiredSkills.length === 0) {
+        return res.json({
+            success: true,
+            recommendations: [],
+            message: "Add required skills to the project to get user recommendations"
+        });
+    }
+    
+    // Get all users who are not already members and have public profiles
+    const memberIds = project.members.map(m => m._id);
+    const users = await User.find({
+        _id: { $nin: [...memberIds, project.createdBy._id] },
+        profilePublic: true,
+        skills: { $exists: true, $ne: [] }
+    }).select("name username profilePicture skills bio location");
+    
+    // Get recommendations
+    const recommendations = getRecommendedUsers(project, users, minMatch);
+    
+    // Limit results
+    const limitedRecommendations = recommendations.slice(0, limit).map(rec => ({
+        user: rec.user,
+        matchPercentage: rec.percentage,
+        matchedSkills: rec.matchedSkills,
+        missingSkills: rec.missingSkills,
+        relatedSkills: rec.relatedSkills,
+        badge: getMatchBadge(rec.percentage)
+    }));
+    
+    res.json({
+        success: true,
+        recommendations: limitedRecommendations,
+        total: recommendations.length
+    });
+}));
+
+/**
+ * GET /projects/:id/api/skill-match
+ * Calculate skill match between current user and a specific project
+ */
+router.get("/:id/api/skill-match", isLoggedin, wrapAsync(async(req, res) => {
+    const { id } = req.params;
+    const userId = req.user._id;
+    
+    // Get project and user
+    const [project, user] = await Promise.all([
+        Project.findById(id),
+        User.findById(userId)
+    ]);
+    
+    if (!project) {
+        return res.status(404).json({
+            success: false,
+            message: "Project not found"
+        });
+    }
+    
+    if (!user || !user.skills || user.skills.length === 0) {
+        return res.json({
+            success: true,
+            matchPercentage: 0,
+            message: "Add skills to your profile to see match percentage"
+        });
+    }
+    
+    // Calculate match
+    const matchInfo = calculateSkillMatch(user.skills, project.requiredSkills);
+    const badge = getMatchBadge(matchInfo.percentage);
+    
+    res.json({
+        success: true,
+        ...matchInfo,
+        badge
     });
 }));
 

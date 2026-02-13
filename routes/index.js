@@ -5,6 +5,7 @@ const { isLoggedin } = require("../utils/middleware.js");
 const User = require("../models/user.js");
 const Project = require("../models/project.js");
 const Notification = require("../models/notification.js");
+const { getRecommendedProjects, getMatchBadge } = require("../utils/skillMatcher.js");
 
 // ==================== Main Routes ====================
 
@@ -60,6 +61,38 @@ router.get("/home", isLoggedin, wrapAsync(async(req, res) => {
         .limit(5)
         .populate("createdBy", "name username");
     
+    // Get recommended projects based on user skills
+    let recommendedProjects = [];
+    try {
+        const currentUser = await User.findById(req.user._id);
+        if (currentUser && currentUser.skills && currentUser.skills.length > 0) {
+            const availableProjects = await Project.find({
+                status: "open",
+                members: { $ne: req.user._id },
+                createdBy: { $ne: req.user._id }
+            })
+            .populate("createdBy", "name username")
+            .limit(50); // Get top 50 to filter from
+            
+            const recommendations = getRecommendedProjects(currentUser, availableProjects, 30);
+            recommendedProjects = recommendations.slice(0, 6).map(rec => {
+                const projectData = rec.project._doc || rec.project.toObject() || rec.project;
+                return {
+                    _id: rec.project._id,
+                    title: projectData.title,
+                    description: projectData.description,
+                    requiredSkills: projectData.requiredSkills || [],
+                    createdBy: rec.project.createdBy,
+                    matchPercentage: rec.percentage,
+                    badge: getMatchBadge(rec.percentage)
+                };
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching recommended projects:', error);
+        // Continue without recommendations
+    }
+    
     res.render("main/home.ejs", {
         title: "Home - DevConnect",
         stats: {
@@ -68,7 +101,8 @@ router.get("/home", isLoggedin, wrapAsync(async(req, res) => {
             completedTasks,
             productivity
         },
-        recentProjects
+        recentProjects,
+        recommendedProjects
     });
 }));
 // ==================== User Profile Routes ====================

@@ -10,22 +10,29 @@ module.exports = (io) => {
         // ==================== Join Project Room ====================
         socket.on('joinProject', (projectId) => {
             socket.join(projectId);
-            console.log(`User ${socket.id} joined project room: ${projectId}`);
+            console.log(`✓ User ${socket.id} joined project room: ${projectId}`);
             
-            // Notify others in the room
+            // Get room size for debugging
+            const room = io.sockets.adapter.rooms.get(projectId);
+            const roomSize = room ? room.size : 0;
+            console.log(`  Room size: ${roomSize} users`);
+            
+            // Notify others in the room (not including sender)
             socket.to(projectId).emit('userJoined', {
-                message: 'A user joined the chat'
+                message: 'A user joined the chat',
+                socketId: socket.id
             });
         });
         
         // ==================== Leave Project Room ====================
         socket.on('leaveProject', (projectId) => {
             socket.leave(projectId);
-            console.log(`User ${socket.id} left project room: ${projectId}`);
+            console.log(`✗ User ${socket.id} left project room: ${projectId}`);
             
             // Notify others
             socket.to(projectId).emit('userLeft', {
-                message: 'A user left the chat'
+                message: 'A user left the chat',
+                socketId: socket.id
             });
         });
         

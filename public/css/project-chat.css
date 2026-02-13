@@ -84,11 +84,20 @@ body {
     gap: 6px;
     color: #22c55e;
     font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.online-status.offline {
+    color: #ef4444;
 }
 
 .online-status i {
     font-size: 8px;
     animation: pulse 2s infinite;
+}
+
+.online-status.offline i {
+    animation: none;
 }
 
 @keyframes pulse {
