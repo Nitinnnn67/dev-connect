@@ -109,38 +109,8 @@ app.set('io', io);
 // Initialize Socket.io handlers from separate folder
 require('./socket')(io);
 
-// ==================== Routes (will be initialized after session setup) ====================
-// Routes are registered in startServer() after session initialization
-
-// ==================== Error Handling ====================
-app.use((req, res, next) => {
-    next(new ExpressError(404, "page not found"));
-});
-
-app.use((err, req, res, next) => {
-    let { statusCode = 500, message = "something went wrong" } = err;
-    console.error('❌ Error occurred:', {
-        statusCode,
-        message: err.message,
-        stack: err.stack,
-        url: req.originalUrl,
-        method: req.method
-    });
-    
-    // Log full error for debugging
-    console.error('Full error:', err);
-    
-    // Send JSON response for API requests
-    if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
-        return res.status(statusCode).json({
-            success: false,
-            error: message,
-            details: process.env.NODE_ENV === 'development' ? err.stack : undefined
-        });
-    }
-    
-    res.status(statusCode).render("main/404.ejs");
-});
+// ==================== Routes and Error Handling ====================
+// Routes and error handlers are registered in startServer() after session initialization
 
 // ==================== Start Server ====================
 // Connect to database first, then start server
@@ -156,6 +126,36 @@ const startServer = async () => {
         app.use("/", indexRoutes);
         app.use("/", userRoutes);
         app.use("/projects", projectRoutes);
+        
+        // Register error handlers AFTER routes (404 must be last)
+        app.use((req, res, next) => {
+            next(new ExpressError(404, "page not found"));
+        });
+
+        app.use((err, req, res, next) => {
+            let { statusCode = 500, message = "something went wrong" } = err;
+            console.error('❌ Error occurred:', {
+                statusCode,
+                message: err.message,
+                stack: err.stack,
+                url: req.originalUrl,
+                method: req.method
+            });
+            
+            // Log full error for debugging
+            console.error('Full error:', err);
+            
+            // Send JSON response for API requests
+            if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+                return res.status(statusCode).json({
+                    success: false,
+                    error: message,
+                    details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+                });
+            }
+            
+            res.status(statusCode).render("main/404.ejs");
+        });
         
         // Start server after successful database connection
         const PORT = process.env.PORT || 5000;
