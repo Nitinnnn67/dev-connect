@@ -4,7 +4,7 @@
 .env.production
 
 # Dependencies  
-OneDrive/Documents/Desktop/AI-Diary/node_modules/
+node_modules/
 
 # API Keys (extra protection)
 *.key
@@ -14,6 +14,9 @@ keys.json
 # Logs
 *.log
 logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # IDE files
 .vscode/
@@ -22,3 +25,12 @@ logs/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Build outputs
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/

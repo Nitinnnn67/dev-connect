@@ -7,6 +7,16 @@ const Project = require("../models/project.js");
 const Notification = require("../models/notification.js");
 const { getRecommendedProjects, getMatchBadge } = require("../utils/skillMatcher.js");
 
+// ==================== Health Check Route ====================
+// Used by hosting platforms to verify app is running
+router.get("/health", (req, res) => {
+    res.status(200).json({ 
+        status: "healthy", 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
 // ==================== Main Routes ====================
 
 // Landing page
