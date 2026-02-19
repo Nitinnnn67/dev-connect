@@ -109,10 +109,8 @@ app.set('io', io);
 // Initialize Socket.io handlers from separate folder
 require('./socket')(io);
 
-// ==================== Routes ====================
-app.use("/", indexRoutes);
-app.use("/", userRoutes);
-app.use("/projects", projectRoutes);
+// ==================== Routes (will be initialized after session setup) ====================
+// Routes are registered in startServer() after session initialization
 
 // ==================== Error Handling ====================
 app.use((req, res, next) => {
@@ -153,6 +151,11 @@ const startServer = async () => {
         
         // Initialize session after DB connection
         initializeSession();
+        
+        // Register routes AFTER session middleware is set up
+        app.use("/", indexRoutes);
+        app.use("/", userRoutes);
+        app.use("/projects", projectRoutes);
         
         // Start server after successful database connection
         const PORT = process.env.PORT || 5000;
