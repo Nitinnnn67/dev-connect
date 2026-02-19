@@ -66,9 +66,9 @@ const initializeSession = () => {
     const sessionOptions = {
         secret: process.env.SESSION_SECRET || "mysupersecretsecret",
         resave: false,
-        saveUninitialized: true,
+        saveUninitialized: false, // Don't create sessions for unauthenticated users
         store: MongoStore.create({
-            client: mongoose.connection.getClient(),
+            mongoUrl: process.env.MONGO_DB_ATLAS,
             touchAfter: 24 * 3600, // Lazy session update (seconds)
             crypto: {
                 secret: process.env.SESSION_SECRET || "mysupersecretsecret"
