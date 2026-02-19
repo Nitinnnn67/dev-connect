@@ -18,6 +18,7 @@ const ejsMate = require("ejs-mate");
 const passport = require("passport");
 const flash = require("connect-flash");
 const helmet = require("helmet");
+const mongoose = require("mongoose");
 const ExpressError = require("./utils/ExpressError.js");
 
 // Load environment variables in development
@@ -58,45 +59,48 @@ app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "public")));
 
-//---------session configuration------------------------------------------------
+//---------session configuration (will be initialized after DB connection)----------
 
-const sessionOptions = {
-    secret: process.env.SESSION_SECRET || "mysupersecretsecret",
-    resave: false,
-    saveUninitialized: true,
-    store: MongoStore.create({
-        mongoUrl: process.env.MONGO_DB_ATLAS,
-        touchAfter: 24 * 3600, // Lazy session update (seconds)
-        crypto: {
-            secret: process.env.SESSION_SECRET || "mysupersecretsecret"
+// Session configuration function - called after DB connects
+const initializeSession = () => {
+    const sessionOptions = {
+        secret: process.env.SESSION_SECRET || "mysupersecretsecret",
+        resave: false,
+        saveUninitialized: true,
+        store: MongoStore.create({
+            client: mongoose.connection.getClient(),
+            touchAfter: 24 * 3600, // Lazy session update (seconds)
+            crypto: {
+                secret: process.env.SESSION_SECRET || "mysupersecretsecret"
+            }
+        }),
+        cookie: {
+            expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production' // Only send cookie over HTTPS in production
         }
-    }),
-    cookie: {
-        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production' // Only send cookie over HTTPS in production
-    }
+    };
+
+    app.use(session(sessionOptions));
+    app.use(flash());
+
+    // Passport middleware
+    app.use(passport.initialize());
+    app.use(passport.session());
+
+    // Global variables
+    app.use((req, res, next) => {
+        res.locals.success = req.flash("success");
+        res.locals.error = req.flash("error");
+        res.locals.currentUser = req.user;
+        next();
+    });
+
+    // Add notification count middleware
+    const { addNotificationCount } = require("./utils/middleware.js");
+    app.use(addNotificationCount);
 };
-
-app.use(session(sessionOptions));
-app.use(flash());
-
-// Passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Global variables
-app.use((req, res, next) => {
-    res.locals.success = req.flash("success");
-    res.locals.error = req.flash("error");
-    res.locals.currentUser = req.user;
-    next();
-});
-
-// Add notification count middleware
-const { addNotificationCount } = require("./utils/middleware.js");
-app.use(addNotificationCount);
 
 // Make io accessible to routes
 app.set('io', io);
@@ -146,6 +150,9 @@ const startServer = async () => {
     try {
         // Connect to database
         await connectDB();
+        
+        // Initialize session after DB connection
+        initializeSession();
         
         // Start server after successful database connection
         const PORT = process.env.PORT || 5000;
