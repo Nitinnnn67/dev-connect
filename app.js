@@ -19,7 +19,12 @@ const passport = require("passport");
 const flash = require("connect-flash");
 const helmet = require("helmet");
 const ExpressError = require("./utils/ExpressError.js");
-require('dotenv').config();
+
+// Load environment variables in development
+// In production, environment variables should be set by the hosting platform
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 
 // Import configurations
 const connectDB = require("./config/database.js");
@@ -93,10 +98,6 @@ app.use((req, res, next) => {
 const { addNotificationCount } = require("./utils/middleware.js");
 app.use(addNotificationCount);
 
-//---------database connection---------------------------------------------------
-
-connectDB();
-
 // Make io accessible to routes
 app.set('io', io);
 
@@ -140,37 +141,55 @@ app.use((err, req, res, next) => {
 });
 
 // ==================== Start Server ====================
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-    console.log(`✓ Server listening on port ${PORT}`);
-    console.log("✓ Socket.io ready for real-time chat");
-    console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
-    if (process.env.NODE_ENV !== 'production') {
-        console.log(`http://localhost:${PORT}`);
+// Connect to database first, then start server
+const startServer = async () => {
+    try {
+        // Connect to database
+        await connectDB();
+        
+        // Start server after successful database connection
+        const PORT = process.env.PORT || 5000;
+        server.listen(PORT, () => {
+            console.log(`✓ Server listening on port ${PORT}`);
+            console.log("✓ Socket.io ready for real-time chat");
+            console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
+            if (process.env.NODE_ENV !== 'production') {
+                console.log(`http://localhost:${PORT}`);
+            }
+        });
+    } catch (error) {
+        console.error('❌ Failed to start server:', error);
+        process.exit(1);
     }
-});
+};
+
+// Start the application
+startServer();
 
 // ==================== Graceful Shutdown ====================
 // Handle graceful shutdown for hosting platforms
-const gracefulShutdown = (signal) => {
+const gracefulShutdown = async (signal) => {
     console.log(`\n${signal} received. Starting graceful shutdown...`);
     
-    server.close(() => {
-        console.log('✓ HTTP server closed');
+    try {
+        // Close server first
+        await new Promise((resolve) => {
+            server.close(() => {
+                console.log('✓ HTTP server closed');
+                resolve();
+            });
+        });
         
         // Close database connection
         const mongoose = require('mongoose');
-        mongoose.connection.close(false, () => {
-            console.log('✓ MongoDB connection closed');
-            process.exit(0);
-        });
-    });
-    
-    // Force shutdown after 10 seconds
-    setTimeout(() => {
-        console.error('Forced shutdown after timeout');
+        await mongoose.connection.close();
+        console.log('✓ MongoDB connection closed');
+        
+        process.exit(0);
+    } catch (error) {
+        console.error('Error during shutdown:', error);
         process.exit(1);
-    }, 10000);
+    }
 };
 
 // Listen for termination signals
@@ -180,7 +199,10 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 // Handle uncaught errors
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    // Don't exit in production, just log
+    // In production, log but don't crash immediately
+    if (process.env.NODE_ENV !== 'production') {
+        gracefulShutdown('unhandledRejection');
+    }
 });
 
 process.on('uncaughtException', (error) => {
