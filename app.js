@@ -68,7 +68,7 @@ const initializeSession = () => {
         resave: false,
         saveUninitialized: false, // Don't create sessions for unauthenticated users
         store: MongoStore.create({
-            mongooseConnection: mongoose.connection,
+            client: mongoose.connection.getClient(),
             collectionName: 'sessions',
             ttl: 7 * 24 * 60 * 60, // 7 days in seconds
             touchAfter: 24 * 3600, // Lazy session update (seconds)
