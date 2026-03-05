@@ -1,4 +1,3 @@
-
 6. Profile Features
 ⚠️ Profile picture upload not implemented (field exists but no upload logic)
 ❌ No image storage solution (Cloudinary/AWS S3)
