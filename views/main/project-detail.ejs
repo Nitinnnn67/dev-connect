@@ -444,7 +444,7 @@
                                 <% if(member.skills && member.skills.length > 0) { %>
                                     <p class="skills"><%= member.skills.slice(0, 3).join(' • ') %></p>
                                 <% } %>
-                                <a href="/users/<%= member.username || member._id %>" class="view-profile">View Profile</a>
+                                <a href="/users/<%= member._id %>" class="view-profile">View Profile</a>
                             </div>
                         <% }); %>
                     <% } else { %>
@@ -466,7 +466,7 @@
                     <div>
                         <h4><%= project.createdBy.name || 'Unknown' %></h4>
                         <p>@<%= project.createdBy.username || 'user' %></p>
-                        <a href="/users/<%= project.createdBy.username || project.createdBy._id %>">View Profile</a>
+                        <a href="/users/<%= project.createdBy._id %>">View Profile</a>
                     </div>
                 </div>
             </div>
