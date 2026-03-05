@@ -316,7 +316,7 @@ router.get("/:id/edit", isLoggedin, wrapAsync(async(req, res) => {
 // Update project
 router.put("/:id", isLoggedin, wrapAsync(async(req, res) => {
     const { id } = req.params;
-    const { title, description, techStack, teamSize, duration, requiredSkills, status, category, tags } = req.body;
+    const { title, description, techStack, teamSize, duration, requiredSkills, status, category, tags, tasks } = req.body;
     
     const project = await Project.findById(id);
     
@@ -330,6 +330,16 @@ router.put("/:id", isLoggedin, wrapAsync(async(req, res) => {
         req.flash("error", "You don't have permission to edit this project!");
         return res.redirect(`/projects/${id}`);
     }
+
+    // Parse tasks JSON submitted from the edit form's hidden input
+    let parsedTasks = project.tasks; // default: keep existing tasks
+    if (tasks) {
+        try {
+            parsedTasks = JSON.parse(tasks);
+        } catch(e) {
+            parsedTasks = project.tasks;
+        }
+    }
     
     await Project.findByIdAndUpdate(id, {
         title,
@@ -340,7 +350,8 @@ router.put("/:id", isLoggedin, wrapAsync(async(req, res) => {
         category: category || project.category,
         teamSize,
         duration,
-        status
+        status,
+        tasks: parsedTasks
     });
     
     req.flash("success", "Project updated successfully!");

@@ -7,6 +7,11 @@
 <div class="project-detail-container">
     <!-- Project Header -->
     <section class="project-header">
+        <div class="header-ambient">
+            <span class="orb orb-one"></span>
+            <span class="orb orb-two"></span>
+            <span class="orb orb-three"></span>
+        </div>
         <div class="header-content">
             <div class="header-main">
                 <a href="/projects" class="back-btn">
@@ -18,11 +23,12 @@
                     <div class="project-icon">
                         <i class="fas fa-rocket"></i>
                     </div>
-                    <div>
+                    <div class="project-title-block">
                         <h1><%= project.title %></h1>
                         <% if(project.description) { %>
                             <p class="project-tagline"><%= project.description.substring(0, 100) %><%= project.description.length > 100 ? '...' : '' %></p>
                         <% } %>
+                    </div>
                 </div>
 
                 <div class="project-badges">
@@ -41,6 +47,30 @@
                             <%= skillMatch.badge.icon %> <%= skillMatch.percentage %>% Skill Match
                         </span>
                     <% } %>
+                </div>
+
+                <% 
+                    const totalTasksHero = project.tasks ? project.tasks.length : 0;
+                    const completedTasksHero = project.tasks ? project.tasks.filter(t => t.status === 'completed').length : 0;
+                    const progressHero = totalTasksHero > 0 ? Math.round((completedTasksHero / totalTasksHero) * 100) : 0;
+                %>
+                <div class="project-meta">
+                    <span class="meta-pill">
+                        <i class="fas fa-calendar-alt"></i>
+                        Created <%= new Date(project.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                    </span>
+                    <span class="meta-pill">
+                        <i class="fas fa-users"></i>
+                        <%= (project.members && project.members.length) || 0 %>/<%= project.teamSize || 'Open' %> team
+                    </span>
+                    <span class="meta-pill">
+                        <i class="fas fa-eye"></i>
+                        <%= project.analytics && project.analytics.views ? project.analytics.views : 0 %> views
+                    </span>
+                    <span class="meta-pill pill-highlight">
+                        <i class="fas fa-bolt"></i>
+                        <%= progressHero %>% progress
+                    </span>
                 </div>
 
                 <div class="project-actions">
@@ -184,25 +214,31 @@
             <!-- Description -->
             <div class="content-card">
                 <h2><i class="fas fa-info-circle"></i> About This Project</h2>
-                <p><%= project.description %></p>
-                
+                <p class="lede"><%= project.description %></p>
+
                 <% if(project.category) { %>
-                    <div style="margin-top: 15px;">
-                        <strong><i class="fas fa-folder"></i> Category:</strong>
-                        <span class="badge" style="background: #17a2b8; color: white; padding: 5px 12px; margin-left: 8px;">
+                    <div class="meta-row">
+                        <div class="meta-label">
+                            <i class="fas fa-folder"></i>
+                            Category
+                        </div>
+                        <span class="pill chip-info">
                             <%= project.category.charAt(0).toUpperCase() + project.category.slice(1) %>
                         </span>
                     </div>
                 <% } %>
-                
+
                 <% if(project.tags && project.tags.length > 0) { %>
-                    <div style="margin-top: 12px;">
-                        <strong><i class="fas fa-tags"></i> Tags:</strong>
-                        <% project.tags.forEach(tag => { %>
-                            <span class="badge" style="background: #6c757d; color: white; padding: 5px 12px; margin: 5px 5px 5px 8px;">
-                                <%= tag %>
-                            </span>
-                        <% }); %>
+                    <div class="meta-row tags-row">
+                        <div class="meta-label">
+                            <i class="fas fa-tags"></i>
+                            Tags
+                        </div>
+                        <div class="tag-cloud">
+                            <% project.tags.forEach(tag => { %>
+                                <span class="tag-chip">#<%= tag %></span>
+                            <% }); %>
+                        </div>
                     </div>
                 <% } %>
             </div>
@@ -231,32 +267,33 @@
                 
                 <!-- Skill Match Details -->
                 <% if(skillMatch && skillMatch.percentage > 0) { %>
-                <div class="skill-match-section" style="margin-top: 24px; padding-top: 24px; border-top: 1px solid #e9ecef;">
+                <div class="skill-match-section">
                     <div class="match-summary">
-                        <h3 style="font-size: 16px; margin-bottom: 12px;">
-                            <i class="fas fa-chart-pie" style="color: #B58863;"></i> Your Skill Match
+                        <h3>
+                            <i class="fas fa-chart-pie"></i> Your Skill Match
                         </h3>
-                        <div class="match-percentage" style="font-size: 32px; font-weight: 700; color: #11293A; margin-bottom: 8px;">
+                        <div class="match-percentage">
                             <%= skillMatch.percentage %>%
                         </div>
-                        <p style="color: #6c757d; font-size: 14px;">
+                        <p class="match-label">
                             <%= skillMatch.badge.label %>
                         </p>
                     </div>
                     
                     <% if(skillMatch.matchedSkills && skillMatch.matchedSkills.length > 0) { %>
-                    <div class="matched-skills" style="margin-top: 16px;">
-                        <h4 style="font-size: 14px; color: #155724; margin-bottom: 8px;">
-                            <i class="fas fa-check-circle"></i> Matched Skills (<%= skillMatch.matchedSkills.length %>)
-                        </h4>
+                    <div class="match-column">
+                        <div class="column-head success">
+                            <i class="fas fa-check-circle"></i>
+                            Matched Skills (<%= skillMatch.matchedSkills.length %>)
+                        </div>
                         <div class="tech-stack">
                             <% skillMatch.matchedSkills.forEach(match => { %>
-                                <span class="tech-tag" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;">
+                                <span class="tech-tag tag-success">
                                     <%= match.required %> 
                                     <% if(match.weight < 1) { %>
-                                        <i class="fas fa-star-half-alt" style="font-size: 10px;"></i>
+                                        <i class="fas fa-star-half-alt"></i>
                                     <% } else { %>
-                                        <i class="fas fa-check" style="font-size: 10px;"></i>
+                                        <i class="fas fa-check"></i>
                                     <% } %>
                                 </span>
                             <% }); %>
@@ -265,14 +302,15 @@
                     <% } %>
                     
                     <% if(skillMatch.relatedSkills && skillMatch.relatedSkills.length > 0) { %>
-                    <div class="related-skills" style="margin-top: 16px;">
-                        <h4 style="font-size: 14px; color: #0c5460; margin-bottom: 8px;">
-                            <i class="fas fa-link"></i> Related Skills (<%= skillMatch.relatedSkills.length %>)
-                        </h4>
+                    <div class="match-column info">
+                        <div class="column-head info">
+                            <i class="fas fa-link"></i>
+                            Related Skills (<%= skillMatch.relatedSkills.length %>)
+                        </div>
                         <div class="tech-stack">
                             <% skillMatch.relatedSkills.forEach(rel => { %>
-                                <span class="tech-tag" style="background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb;">
-                                    <%= rel.required %> <i class="fas fa-arrow-right" style="font-size: 10px;"></i> <%= rel.related %>
+                                <span class="tech-tag tag-info">
+                                    <%= rel.required %> <i class="fas fa-arrow-right"></i> <%= rel.related %>
                                 </span>
                             <% }); %>
                         </div>
@@ -280,13 +318,14 @@
                     <% } %>
                     
                     <% if(skillMatch.missingSkills && skillMatch.missingSkills.length > 0) { %>
-                    <div class="missing-skills" style="margin-top: 16px;">
-                        <h4 style="font-size: 14px; color: #856404; margin-bottom: 8px;">
-                            <i class="fas fa-exclamation-triangle"></i> Skills to Learn (<%= skillMatch.missingSkills.length %>)
-                        </h4>
+                    <div class="match-column warning">
+                        <div class="column-head warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Skills to Learn (<%= skillMatch.missingSkills.length %>)
+                        </div>
                         <div class="tech-stack">
                             <% skillMatch.missingSkills.forEach(skill => { %>
-                                <span class="tech-tag" style="background: #fff3cd; color: #856404; border: 1px solid #ffeaa7;">
+                                <span class="tech-tag tag-warning">
                                     <%= skill %>
                                 </span>
                             <% }); %>

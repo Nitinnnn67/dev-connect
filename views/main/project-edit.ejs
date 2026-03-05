@@ -531,6 +531,9 @@ updateTasksHidden();
 // Form Validation
 const projectForm = document.getElementById('projectForm');
 projectForm.addEventListener('submit', (e) => {
+    // Ensure tasks hidden field is up to date before submission
+    updateTasksHidden();
+
     // Validate required fields
     const title = document.getElementById('title').value.trim();
     const description = document.getElementById('description').value.trim();

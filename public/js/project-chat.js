@@ -11,6 +11,13 @@ socket.on('connect', () => {
     console.log('✓ Socket.io connected:', socket.id);
     isConnected = true;
     updateConnectionStatus(true);
+    
+    // Rejoin project room on every (re)connect so messages are never missed
+    const projectId = window.location.pathname.split('/')[2];
+    if (projectId) {
+        socket.emit('joinProject', projectId);
+        console.log('✓ (Re)joined project room on connect:', projectId);
+    }
 });
 
 socket.on('connect_error', (error) => {
@@ -60,9 +67,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     console.log('Chat initialized:', { projectId, currentUserId, currentUserName });
 
-    // Join project room
-    socket.emit('joinProject', projectId);
-    console.log('✓ Joined project room:', projectId);
+    // Room is joined automatically by the socket 'connect' event handler above.
+    // This ensures the room is (re)joined even after reconnections.
 
     // Listen for new messages
     socket.on('newMessage', function(message) {

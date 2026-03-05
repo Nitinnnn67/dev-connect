@@ -5,10 +5,12 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server, {
     cors: {
-        origin: process.env.BASE_URL || "http://localhost:5000",
+        origin: "*",
         methods: ["GET", "POST"],
-        credentials: true
-    }
+        credentials: false
+    },
+    transports: ["websocket", "polling"],
+    allowEIO3: true
 });
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
